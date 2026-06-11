@@ -1,0 +1,82 @@
+flowchart TB
+  GY["gen-yaml · compile · lint"]
+  DM["domain_model/schema.yaml"]
+  GY -.-> DM
+
+  subgraph commons [Commons — ourcommons.ca / petitions.ourcommons.ca]
+    direction LR
+    S2[MemberOfParliament]
+    S3[HouseVote]
+    S4[HousePetition]
+    S7[FederalCaucus]
+    A2[commons XML adapter]
+    SM2[source/member_of_parliament]
+    T2[members → gckg]
+    T3[votes → gckg]
+    T4[petitions → gckg]
+    T7[caucus → gckg]
+  end
+
+  subgraph open_canada [Open Canada — open.canada.ca]
+    direction LR
+    S5[MembersExpenditure]
+    S6[PoliticalContribution]
+    A3[expenditure adapter]
+    A4[contributions adapter]
+    SM5[source/members_expenditure]
+    T5[expenditures → gckg]
+    T6[contributions → gckg]
+  end
+
+  subgraph udc [Urban Data Centre]
+    direction LR
+    S1[FederalElectoralDistrict]
+    A1[statcan / udc adapter]
+    SM1[source/federal_electoral_district]
+    T1[districts → gckg]
+  end
+
+  V1["Validate · Step 1<br/>linkml-validate · source schema"]
+  BR[("Bronze · source-validated")]
+  SLV[("Silver · per-path graph")]
+  MR["Integrate · graph merge · entity resolution"]
+  V3["Publish · Step 3<br/>linkml-validate · domain schema"]
+  GLD[("Gold · domain-conformant")]
+  Q1[("Source quarantine")]
+  Q3[("Domain quarantine")]
+
+  S1 --> A1 --> V1
+  S2 & S3 & S4 --> A2 --> V1
+  S7 --> A2 --> V1
+  S5 --> A3 --> V1
+  S6 --> A4 --> V1
+
+  V1 -->|pass| BR
+  V1 -->|reject| Q1
+
+  SM1 & SM2 & SM5 -.->|schema| V1
+
+  BR --> T1 & T2 & T3 & T4 & T5 & T6 & T7
+  T1 & T2 & T3 & T4 & T5 & T6 & T7 -->|Transform · Step 2 · production| SLV
+  BR -->|untransformed| SLV
+
+  SLV --> MR --> V3
+  V3 -->|pass| GLD
+  V3 -->|reject| Q3
+  DM -.->|schema| V3
+
+  classDef bronze fill:#cd7f32,color:#fff,stroke:#8B4513
+  classDef silver fill:#c0c0c0,color:#1a1a1a,stroke:#808080
+  classDef gold fill:#ffd700,color:#1a1a1a,stroke:#b8860b
+  classDef gate fill:#2b6cb0,color:#fff,stroke:#1a4480
+  classDef domain fill:#4a6741,color:#fff,stroke:#2d4a27
+  classDef quarantine fill:#c53030,color:#fff,stroke:#9b2c2c
+  classDef integrate fill:#6b46c1,color:#fff,stroke:#553c9a
+
+  class BR bronze
+  class SLV silver
+  class GLD gold
+  class V1,V3 gate
+  class MR integrate
+  class DM domain
+  class Q1,Q3 quarantine

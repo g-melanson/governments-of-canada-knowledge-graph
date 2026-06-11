@@ -1,0 +1,88 @@
+flowchart LR
+  subgraph BP [LinkML blueprints · build time]
+    direction TB
+    SS["source/*.schema.yaml"]
+    ES["experimental/*.schema.yaml"]
+    DM["domain_model/schema.yaml"]
+    GY["gen-yaml · compile · lint"]
+    SS --> GY
+    ES --> GY
+    DM --> GY
+  end
+
+  subgraph ST1 [Stage 1 — Ingest]
+    direction TB
+    SC["Commons XML"]
+    OC["Open Canada CSV"]
+    UD["Urban Data Centre CSV"]
+    AD["Parse · normalize · filter"]
+    SC --> AD
+    OC --> AD
+    UD --> AD
+  end
+
+  subgraph ST2 [Stage 2 — Validate]
+    direction TB
+    V1["Step 1 · linkml-validate<br/>source schema · fail-fast"]
+    BR[("Bronze · source-validated")]
+    V1 -->|pass| BR
+  end
+
+  subgraph ST3 [Stage 3 — Transform]
+    direction TB
+    TR["Step 2 · LinkML-Map<br/>transforms/*.yaml"]
+    PE["Experimental LinkML-Map<br/>experimental/*.yaml"]
+    SLV[("Silver · per-path graph")]
+  end
+
+  subgraph ST4 [Stage 4 — Integrate]
+    MR["Graph merge · entity resolution<br/>dedupe · link · reconcile"]
+  end
+
+  subgraph ST5 [Stage 5 — Publish]
+    direction TB
+    V3["Step 3 · linkml-validate<br/>domain schema · fail-fast"]
+    GLD[("Gold · domain-conformant")]
+    V3 -->|pass| GLD
+  end
+
+  subgraph QZ [Quarantine]
+    direction TB
+    Q1[("Source quarantine<br/>rejects + drift report")]
+    Q3[("Domain quarantine<br/>rejects + drift report")]
+  end
+
+  AD --> V1
+  V1 -->|reject| Q1
+
+  SS -.->|schema| V1
+  GY -.->|lints| SS
+
+  BR --> TR
+  BR --> PE
+  BR -->|untransformed| SLV
+  TR -->|production| SLV
+  PE -->|experimental| SLV
+
+  SLV --> MR --> V3
+  V3 -->|reject| Q3
+  DM -.->|schema| V3
+  GY -.->|lints| DM
+
+  classDef bronze fill:#cd7f32,color:#fff,stroke:#8B4513
+  classDef silver fill:#c0c0c0,color:#1a1a1a,stroke:#808080
+  classDef gold fill:#ffd700,color:#1a1a1a,stroke:#b8860b
+  classDef gate fill:#2b6cb0,color:#fff,stroke:#1a4480
+  classDef domain fill:#4a6741,color:#fff,stroke:#2d4a27
+  classDef build fill:#edf2f7,color:#1a1a1a,stroke:#a0aec0
+  classDef quarantine fill:#c53030,color:#fff,stroke:#9b2c2c
+  classDef integrate fill:#6b46c1,color:#fff,stroke:#553c9a
+
+  class BR bronze
+  class SLV silver
+  class GLD gold
+  class V1,V3 gate
+  class MR integrate
+  class DM,SS,ES domain
+  class GY build
+  class Q1,Q3 quarantine
