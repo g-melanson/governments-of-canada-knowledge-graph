@@ -1,0 +1,4 @@
+
+commons_members:
+  schema_path: source/commons_members.schema.yaml
+  target_class: CommonsMembersRow
