@@ -1,0 +1,1 @@
+from ingest.adapters.open_canada.contribution import FederalElectionContributionAdapter  # noqa: F401
