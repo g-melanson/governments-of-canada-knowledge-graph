@@ -1,0 +1,74 @@
+
+id: https://w3id.org/gckg/source/commons_members
+name: commons_members_source
+title: Commons members — staged row shape
+description: Source schema for Stage 1 JSONL from ourcommons.ca MemberOfParliament XML.
+version: 0.1.0
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  gckg: https://w3id.org/gckg/commons_members/
+
+default_prefix: gckg
+
+imports:
+  - linkml:types
+
+classes:
+  CommonsMembersRow:
+    description: A row of data sourced from the House of Commons open data.
+    attributes:
+      person_id:
+        description: Unique multi-numerical identifier for the member.
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "PersonId"
+
+      person_short_honorific:
+        description: Short honorific for the member.
+        range: string
+        annotations:
+          gckg:publisher_header: "PersonShortHonorific"
+      
+      person_official_first_name:
+        description: Official first name of the member.
+        range: string
+        annotations:
+          gckg:publisher_header: "PersonOfficialFirstName"
+      
+      person_official_last_name:
+        description: Official last name of the member.
+        range: string
+        annotations:
+          gckg:publisher_header: "PersonOfficialLastName"
+      
+      constituency_name:
+        description: Name of the constituency the member represents.
+        range: string
+        annotations:
+          gckg:publisher_header: "ConstituencyName"
+      
+      constituency_province_territory_name:
+        description: Province or territory of the constituency the member represents.
+        range: string
+        annotations:
+          gckg:publisher_header: "ConstituencyProvinceTerritoryName"
+      
+      caucus_short_name:
+        description: Short name of the caucus the member belongs to.
+        range: string
+        annotations:
+          gckg:publisher_header: "CaucusShortName"
+      
+      from_date_time:
+        description: Date and time the member was elected.
+        range: datetime
+        annotations:
+          gckg:publisher_header: "FromDateTime"
+      
+      to_date_time:
+        description: Date and time the member's term ended.
+        range: datetime
+        annotations:
+          gckg:publisher_header: "ToDateTime"
