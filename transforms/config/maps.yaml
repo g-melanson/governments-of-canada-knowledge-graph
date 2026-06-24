@@ -1,0 +1,5 @@
+commons_members:
+  map_path: transforms/commons_members_to_gckg.transform.yaml
+  source_class: CommonsMembersRow
+  source_schema: source/commons_members.schema.yaml
+  materializer: transforms.materializers.commons_members.get_materializer

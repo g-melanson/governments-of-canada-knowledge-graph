@@ -14,7 +14,6 @@ from ingest.runner import run_ingest
 
 # Import adapters so @register runs
 import ingest.adapters.commons.members  # noqa: F401
-import ingest.adapters.open_canada.contribution  # noqa: F401
 
 
 def _default_run_id() -> str:

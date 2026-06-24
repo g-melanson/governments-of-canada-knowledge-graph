@@ -85,7 +85,7 @@ def run_validate(ctx: ValidateContext) -> dict:
             }
         ],
         "output": {
-            "records_path": "records.jsonl",
+            "records_path": str(ctx.bronze_records_path),
             "record_count": summary.accepted_count,
             "rejected_count": summary.rejected_count,
             "drift_report_path": str(ctx.drift_report_path),

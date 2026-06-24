@@ -1,0 +1,25 @@
+
+id: https://w3id.org/gckg/transforms/commons_members_to_gckg
+name: commons_members_to_gckg
+title: Commons members Bronze → GCKG domain
+class_derivations:
+  Person:
+    populated_from: CommonsMembersRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Person:Commons:' + str(person_id)"
+      name:
+        expr: >-
+          (person_official_first_name or '') + ' ' +
+          (person_official_last_name or '')
+
+  MemberOfParliament:
+    populated_from: CommonsMembersRow
+    slot_derivations:
+      id:
+        expr: >-
+          'gckg:MemberOfParliament:' + str(person_id) + ':' + str(from_date)
+      start_date:
+        expr: str(from_date_time)
+      end_date:
+        expr: str(to_date_time)

@@ -1,4 +1,3 @@
-"""CLI for Stage 2 validate."""
 
 from __future__ import annotations
 
