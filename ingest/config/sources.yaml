@@ -5,12 +5,3 @@ commons_members:
   rate_limit_seconds: 1.0
   format: xml
   raw_filename: members.xml
-
-open_canada_federal_election_contribution:
-  # Elections Canada publishes a zip; download and extract od_cntrbtn_audt_e.csv manually.
-  local_only: true
-  url: https://www.elections.ca/content.aspx?section=fin&dir=cir&document=index&lang=e
-  ttl_seconds: 86400
-  rate_limit_seconds: 1.0
-  format: csv
-  raw_filename: od_cntrbtn_audt_e.csv
