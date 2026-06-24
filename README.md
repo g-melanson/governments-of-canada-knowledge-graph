@@ -62,7 +62,7 @@ Source schemas, domain model, and experimental schemas are compiled and linted w
 |-------|---------|------|
 | **1 — Ingest** | Parse and normalize raw publisher data | — |
 | **2 — Validate** | LinkML validation against source schema; optional fail-fast on drift | Bronze |
-| **3 — Transform** | LinkML-Map declarative translation (production or experimental) | Silver |
+| **3 — Transform** | Python materializers emit graph fragments (LinkML-Map spec kept as reference) | Silver |
 | **4 — Integrate** | Graph merge, dedupe, entity resolution, cross-source linking | Silver (merged) |
 | **5 — Publish** | LinkML validation against domain schema | Gold |
 
@@ -188,28 +188,28 @@ Requires the validate extra: `pip install -e ".[validate]"`. Run from repo root 
 
 ## Milestone 3 — Transform pipeline (Stage 3 / Silver)
 
-**Goal:** Transform Bronze records into **Silver graph fragments** using declarative **LinkML-Map** and materializers, introducing GCKG domain IDs and typed entities/relationships.
+**Goal:** Transform Bronze records into **Silver graph fragments**, introducing GCKG domain IDs and typed entities/relationships.
 
-**Status:** Not started.
+**Status:** Platform and a first `commons_members` materializer are implemented and run end-to-end. Transformation is currently driven by **Python materializers** in the `transforms/` package; a LinkML-Map-style spec (`transforms/commons_members_to_gckg.transform.yaml`) is kept as a reference but is **not executed** (no `linkml-map` dependency). Broader entity coverage, tests, and packaging remain.
 
 Execution plan: [`docs/milestone_3/transform-execution-plan.md`](docs/milestone_3/transform-execution-plan.md)
 
 | Phase | Work | Status | Output |
 |-------|------|--------|--------|
-| **0 — Domain prep** | Extend `house_of_commons.yaml` (membership, tenure) | Not started | `gen-yaml` passes |
-| **1 — Platform** | `transform/` package: CLI, runner, context, config registry, silver layout | Not started | `python -m transform run …` |
-| **2 — IDs + provenance** | Deterministic URI builders, `wasDerivedFrom` on every fragment | Not started | `transform/ids.py`, `transform/provenance.py` |
-| **3 — Members map** | `transforms/commons_members_to_gckg.yaml` + materializer | Not started | Person, Seat, Role, Party, triples from one Bronze row |
-| **4 — Experimental lane** | Opt-in experimental maps via CLI flag | Not started | Safe map iteration |
-| **5 — Tests + packaging** | Golden Silver fixtures, bronze→silver integration, `pyproject.toml` | Not started | `transform/tests/` |
+| **0 — Domain prep** | `house_of_commons.yaml` + root triples for MP tenure | Partial | `gen-yaml` passes |
+| **1 — Platform** | `transforms/` package: CLI, runner, engine, context, config registry, silver layout | Done | `python -m transforms run …` |
+| **2 — IDs + bronze_reference** | Deterministic URI builders + `make_bronze_reference()` | Partial | Inline in materializer/base (no `ids.py`, no slugs) |
+| **3 — Members materializer** | `transforms/materializers/commons_members.py` (+ reference `.transform.yaml`) | Partial | Person, MemberOfParliament, generic RELATIONSHIP per Bronze row |
+| **4 — Experimental lane** | Opt-in experimental maps via CLI flag | Not started | — |
+| **5 — Tests + packaging** | Materializer/integration tests, `pyproject.toml` extra | Not started | `transforms/tests/` (does not exist yet) |
 
 ### How Stage 3 works
 
-1. Read `bronze/{source}/{bronze_run_id}/records.jsonl` and Bronze `manifest.json`.
-2. Load LinkML-Map from `transform/config/maps.yaml` (or `--map` override).
-3. Stream Bronze JSONL; for each row, apply map + **materializer** (multi-object graph expansion).
-4. Write **`silver/{source}/{run_id}/fragments.jsonl`** — one graph object per line (Person, Triple, …).
-5. Write **`silver/{source}/{run_id}/manifest.json`** with fragment counts and provenance to Bronze.
+1. Read `bronze/{source}/{bronze_run_id}/records.jsonl`.
+2. Look up the source in `transforms/config/maps.yaml` and load its materializer factory.
+3. Stream Bronze JSONL; for each row, the **Python materializer** emits one or more graph fragments.
+4. Write **`silver/{source}/{run_id}/fragments.jsonl`** — one graph object per line (Person, MemberOfParliament, RELATIONSHIP).
+5. Write **`silver/{source}/{run_id}/quarantine.jsonl`** (raw Bronze rows that failed materialization) and **`manifest.json`** with counts and a Bronze reference.
 
 Silver is **per-source** graph fragments. Cross-source merge is Stage 4 (Integrate).
 
@@ -217,23 +217,25 @@ Silver is **per-source** graph fragments. Cross-source merge is Stage 4 (Integra
 
 ```text
 bronze/{source}/{run_id}/records.jsonl
-  →  python -m transform run --source … --bronze-run-id …
-  →  silver/{source}/{run_id}/fragments.jsonl
+  →  python -m transforms run --source … --bronze-run-id … [--run-id …]
+  →  silver/{source}/{run_id}/fragments.jsonl + quarantine.jsonl + manifest.json
 ```
 
-### Example (once implemented)
+### Example
 
 ```bash
-python -m transform run --source commons_members --bronze-run-id m3-test
+python -m transforms run --source commons_members --bronze-run-id m3-test --run-id m3-test
 ```
+
+There is no `transforms` console script or `.[transform]` extra yet — invoke via `python -m transforms` from the repo root.
 
 ### Done when (members)
 
-- [ ] `commons_members` Bronze row materializes Person + Seat + Role + Party + tenure triples
-- [ ] GCKG IDs are deterministic and source-scoped
-- [ ] Every Silver fragment carries provenance back to Bronze
-- [ ] `transforms/commons_members_to_gckg.yaml` in production; experimental lane available
-- [ ] `pytest transform/tests` passes offline
+- [x] `commons_members` Bronze row materializes graph fragments (Person + MemberOfParliament + RELATIONSHIP)
+- [x] GCKG IDs are deterministic and source-scoped (e.g. `gckg:Person:Commons:{id}`)
+- [x] Every Silver fragment carries a `bronze_reference` back to Bronze
+- [ ] Materialize District + Seat + Party + named tenure triples (with name-based slugs)
+- [ ] `transforms/tests/` with offline fixtures; wired into `pyproject.toml`
 
 ## File layout
 
@@ -290,9 +292,19 @@ gckg/
 │   │   └── schemas.yaml                    source → schema_path + target_class
 │   └── tests/
 │
-├── transform/                              Python package · Stage 3 Transform (planned)
-├── transforms/                             LinkML-Map production maps (planned)
-├── experimental/                           draft LinkML maps · Stage 3 opt-in (planned)
+├── transforms/                             Python package · Stage 3 Transform
+│   ├── __main__.py                         python -m transforms
+│   ├── cli.py
+│   ├── runner.py                           run_transform → fragments + quarantine + manifest
+│   ├── engine.py                           stream Bronze JSONL, load materializer factory
+│   ├── context.py                          TransformContext
+│   ├── errors.py
+│   ├── commons_members_to_gckg.transform.yaml   LinkML-Map-style spec (reference only)
+│   ├── config/
+│   │   └── maps.yaml                        source → materializer + spec/source-class refs
+│   └── materializers/
+│       ├── base.py                         FragmentMaterializer + make_bronze_reference()
+│       └── commons_members.py              Bronze row → Person, MP, RELATIONSHIP
 │
 ├── staging/                                gitignored · Stage 1 output
 │   └── {source}/
@@ -315,6 +327,7 @@ gckg/
 ├── silver/                                 gitignored · Stage 3 output
 │   └── {source}/{run_id}/
 │       ├── fragments.jsonl
+│       ├── quarantine.jsonl                 raw Bronze rows that failed materialization
 │       └── manifest.json
 │
 └── gold/                                   gitignored · Stage 5 (future)
