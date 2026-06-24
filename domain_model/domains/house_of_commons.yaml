@@ -1,0 +1,37 @@
+id: https://w3id.org/gckg/domains/commons
+name: gckg_parliament
+title: GCKG parliament domain
+description: House of Commons entities — members, districts, caucus.
+version: 0.1.0
+
+imports:
+  - ../foundation/prefixes
+  - linkml:types
+  - ../foundation/types
+
+default_prefix: gckg
+
+classes:
+
+### PARLIAMENTARY STRUCTURE ###
+
+  FederalElectoralDistrict:
+    is_a: Entity
+    class_uri: gckg:FederalElectoralDistrict
+
+  MemberOfParliament:
+    is_a: Role
+    class_uri: gckg:MemberOfParliament
+    attributes:
+      start_date:
+        range: datetime
+      end_date:
+        range: datetime
+
+  HouseOfCommonsSeat:
+    is_a: Entity
+    class_uri: gckg:HouseOfCommonsSeat
+  
+  PoliticalParty:
+    is_a: Organization
+    class_uri: gckg:PoliticalParty

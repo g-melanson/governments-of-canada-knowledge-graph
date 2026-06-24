@@ -1,0 +1,67 @@
+id: https://w3id.org/gckg/foundation/types
+name: gckg_foundation_types
+title: GCKG foundation types
+description: Shared base classes for nodes and reified relationships.
+version: 0.1.0
+
+imports:
+  - prefixes
+  - linkml:types
+
+default_prefix: gckg
+
+classes:
+
+  Node:
+    abstract: true
+    slots:
+      - id
+      - name
+      - labels
+
+  Concept:
+    is_a: Node
+    abstract: true
+    class_uri: skos:Concept
+
+  Entity:
+    is_a: Node
+    abstract: true
+    class_uri: prov:Entity
+
+  Agent:
+    is_a: Entity
+    class_uri: prov:Agent
+
+  Membership:
+    is_a: Concept
+
+  Organization:
+    is_a: Agent
+    class_uri: org:Organization
+
+  Person:
+    is_a: Agent
+    class_uri: foaf:Person
+
+  Role:
+    is_a: Concept
+    class_uri: org:Role
+
+slots:
+
+  id:
+    identifier: true
+    range: uriorcurie
+    required: true
+
+  name:
+    range: string
+    slot_uri: rdfs:label
+
+  labels:
+    range: string
+    multivalued: true
+    slot_uri: rdf:type
+
+
