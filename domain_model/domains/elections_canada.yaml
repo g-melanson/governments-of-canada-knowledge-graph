@@ -1,0 +1,24 @@
+id: https://w3id.org/gckg/domains/ea
+name: gckg_elections
+title: GCKG Elections Canada domain
+description: Concepts and entities from Elections Canada data.
+version: 0.1.0
+
+imports:
+  - ../foundation/prefixes
+  - linkml:types
+  - ../foundation/types
+
+default_prefix: gckg
+
+classes:
+
+  FederalElectoralDistrict:
+    is_a: Entity
+    class_uri: gckg:FederalElectoralDistrict
+    attributes:
+      province:
+        range: string
+      representation_order:
+        range: string
+

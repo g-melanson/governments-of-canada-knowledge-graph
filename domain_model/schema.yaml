@@ -1,0 +1,50 @@
+id: https://w3id.org/gckg/
+name: gckg
+title: Canadian Governments Knowledge Graph Schema
+description: Root import for the GCKG LinkML domain model.
+version: 0.1.0
+license: https://creativecommons.org/licenses/by/4.0/
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+
+imports:
+  - foundation/prefixes
+  - linkml:types
+  - foundation/types
+  - domains/house_of_commons
+
+default_prefix: gckg
+
+classes:
+  Triple:
+    abstract: true
+    represents_relationship: true
+    description: A subject–predicate–object assertion.
+    attributes:
+      subject:
+        range: Node
+      predicate:
+        range: string
+      object:
+        range: Node
+
+  PersonAssociatedWithPoliticalParty:
+    is_a: Triple
+    slot_usage:
+      subject:
+        range: Person
+      predicate:
+        equals_string: associatedWith
+      object:
+        range: PoliticalParty
+
+  PersonHasRoleMemberOfParliament:
+    is_a: Triple
+    slot_usage:
+      subject:
+        range: Person
+      predicate:
+        equals_string: hasRole
+      object:
+        range: MemberOfParliament
