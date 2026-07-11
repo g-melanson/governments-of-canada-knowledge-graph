@@ -1,0 +1,354 @@
+id: https://w3id.org/gckg/source/justice_statute_p1
+name: justice_statute_p1_source
+title: Source schema — Parliament of Canada Act P-1 (Bronze)
+description: >-
+  Staged row classes for the Justice Canada consolidated statute XML
+  (https://laws-lois.justice.gc.ca/eng/XML/P-1.xml).
+  Shares element vocabulary with Commons By-Law XML but uses Statute root
+  and lims-prefixed publisher attributes.
+version: 0.1.0
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  gckg: https://w3id.org/gckg/
+
+imports:
+  - linkml:types
+
+default_prefix: gckg
+default_range: string
+
+classes:
+
+  StatuteDocumentRow:
+    description: >-
+      Singleton metadata record for the consolidated statute.
+      One row per ingested XML file.
+    attributes:
+      consolidated_number:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Chapter/ConsolidatedNumber"
+      short_title:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Identification/ShortTitle"
+      long_title:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Identification/LongTitle"
+      running_head:
+        range: string
+        annotations:
+          gckg:publisher_header: "Identification/RunningHead"
+      bill_origin:
+        range: string
+        annotations:
+          gckg:publisher_header: "Statute@bill-origin"
+      bill_type:
+        range: string
+        annotations:
+          gckg:publisher_header: "Statute@bill-type"
+      lang:
+        range: string
+        annotations:
+          gckg:publisher_header: "Statute@lang"
+      current_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Statute@current-date"
+      pit_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Statute@pit-date"
+      last_amended_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Statute@lastAmendedDate"
+      in_force:
+        range: string
+        annotations:
+          gckg:publisher_header: "Statute@in-force"
+      stage:
+        range: string
+        annotations:
+          gckg:publisher_header: "Stages@stage"
+      consolidation_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Date/YYYY"
+          gckg:adapter_note: >-
+            Adapter should compose YYYY-MM-DD from Date/YYYY, Date/MM, Date/DD.
+
+  StatuteAmendmentRow:
+    description: >-
+      One row per recent amending act listed in RecentAmendments.
+      4 instances; Amendment/AmendmentCitation fill_rate=1.0.
+    attributes:
+      amendment_citation:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Amendment/AmendmentCitation"
+      amendment_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Amendment/AmendmentDate"
+      amendment_link:
+        range: string
+        annotations:
+          gckg:publisher_header: "AmendmentCitation@link"
+
+  StatuteSectionRow:
+    description: >-
+      One row per Section in Body or RelatedOrNotInForce.
+      235 instances; Section@id is the stable publisher key (235 distinct).
+      Section/Label is the human section number (233 distinct — not globally unique).
+      Heading context (lv1–4) is denormalized from preceding Heading siblings.
+    attributes:
+      publisher_id:
+        range: string
+        required: true
+        identifier: true
+        annotations:
+          gckg:publisher_header: "Section@id"
+      section_label:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Section/Label"
+      marginal_note:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/MarginalNote"
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/Text"
+      inforce_start_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@inforce-start-date"
+      last_amended_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@lastAmendedDate"
+      context:
+        range: string
+        annotations:
+          gckg:adapter_note: >-
+            Adapter-set value: "body" for Body sections, "related_not_in_force"
+            for Schedule RelatedOrNotInForce sections.
+      heading_lv1:
+        range: string
+        annotations:
+          gckg:publisher_header: "Heading/TitleText"
+          gckg:adapter_note: >-
+            Ancestor context — most recent level-1 Heading sibling preceding
+            this Section (e.g. "PART I — Senate and House of Commons").
+      heading_lv2:
+        range: string
+        annotations:
+          gckg:publisher_header: "Heading/TitleText"
+          gckg:adapter_note: Ancestor context — most recent level-2 Heading sibling.
+      heading_lv3:
+        range: string
+        annotations:
+          gckg:publisher_header: "Heading/TitleText"
+          gckg:adapter_note: Ancestor context — most recent level-3 Heading sibling.
+      heading_lv4:
+        range: string
+        annotations:
+          gckg:publisher_header: "Heading/TitleText"
+          gckg:adapter_note: Ancestor context — most recent level-4 Heading sibling.
+
+  StatuteSubsectionRow:
+    description: >-
+      One row per Subsection nested under a Section.
+      386 instances; identified by (publisher_section_id, subsection_label).
+    attributes:
+      publisher_section_id:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Section@id"
+      subsection_label:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+      marginal_note:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/MarginalNote"
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Text"
+      publisher_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection@id"
+
+  StatuteParagraphRow:
+    description: >-
+      One row per Paragraph nested under a Section, Subsection, or Definition.
+      262 instances total.
+    attributes:
+      publisher_section_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@id"
+      subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+      label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Paragraph/Label"
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Paragraph/Text"
+      publisher_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Paragraph@id"
+
+  StatuteSubparagraphRow:
+    description: >-
+      One row per Subparagraph nested under a Paragraph.
+      26 instances.
+    attributes:
+      label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subparagraph/Label"
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subparagraph/Text"
+      publisher_section_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@id"
+      subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+      paragraph_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Paragraph/Label"
+
+  StatuteDefinedTermRow:
+    description: >-
+      One row per defined term inline in a Text element.
+      19 distinct English terms (Text/DefinedTermEn); 11 distinct French terms.
+    attributes:
+      term_en:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Text/DefinedTermEn"
+      term_fr:
+        range: string
+        annotations:
+          gckg:publisher_header: "Text/DefinedTermFr"
+      publisher_section_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@id"
+      subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+
+  StatuteExternalRefRow:
+    description: >-
+      One row per external legal reference cited in provision text.
+      108 XRefExternal occurrences; 21 distinct act titles;
+      XRefExternal@reference-type ∈ {act, other}.
+    attributes:
+      reference_name:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Text/XRefExternal"
+      consolidated_number:
+        range: string
+        annotations:
+          gckg:publisher_header: "XRefExternal@link"
+      reference_type:
+        range: string
+        annotations:
+          gckg:publisher_header: "XRefExternal@reference-type"
+      publisher_section_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@id"
+      subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+
+  StatuteInternalRefRow:
+    description: >-
+      One row per internal cross-reference to another section of the same statute.
+      93 XRefInternal occurrences; 25 distinct target section numbers.
+    attributes:
+      target_section_label:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Text/XRefInternal"
+      publisher_section_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@id"
+      subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+
+  StatuteHistoricalNoteRow:
+    description: >-
+      One row per HistoricalNoteSubItem recording amendment provenance.
+      165 sub-items across 152 sections.
+    attributes:
+      citation:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "HistoricalNote/HistoricalNoteSubItem"
+      publisher_section_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@id"
+      inforce_start_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "HistoricalNoteSubItem@inforce-start-date"
+
+  StatuteTermCrossRefRow:
+    description: >-
+      One row per DefinitionRef citing another defined term within a definition block.
+      15 occurrences; 11 distinct cited terms.
+    attributes:
+      cited_term:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Text/DefinitionRef"
+      publisher_section_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section@id"
+      subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"

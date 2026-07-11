@@ -1,0 +1,145 @@
+id: https://w3id.org/gckg/source/justice_legis_catalog
+name: justice_legis_catalog_source
+title: Source schema — Justice Canada Legis.xml acts & regulations catalog (Bronze)
+description: >-
+  Staged row classes for the Justice Canada master catalog XML
+  (https://laws-lois.justice.gc.ca/eng/XML/Legis.xml).
+  Flat index of consolidated acts and regulations with bilingual rows,
+  deep-link URLs, and act-to-regulation enabling references.
+version: 0.1.0
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  gckg: https://w3id.org/gckg/
+
+imports:
+  - linkml:types
+
+default_prefix: gckg
+default_range: string
+
+classes:
+
+  LegisCatalogDocumentRow:
+    description: >-
+      Singleton metadata record for the Legis.xml catalog file.
+      One row per ingested XML file.
+    attributes:
+      current_to_date:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Act/CurrentToDate"
+      act_count:
+        range: integer
+        description: Derived at ingest time from Acts/Act element count (profile=1928).
+      regulation_count:
+        range: integer
+        description: Derived at ingest time from Regulations/Regulation element count (profile=9714).
+
+  ActCatalogEntryRow:
+    description: >-
+      One row per Act element in the catalog.
+      Composite natural key is (unique_id, language): UniqueId repeats once per
+      language (964 distinct values across 1928 rows; max_records_per_value=2).
+    attributes:
+      unique_id:
+        range: string
+        required: true
+        identifier: true
+        annotations:
+          gckg:publisher_header: "Act/UniqueId"
+      language:
+        range: string
+        required: true
+        identifier: true
+        annotations:
+          gckg:publisher_header: "Act/Language"
+      official_number:
+        range: string
+        annotations:
+          gckg:publisher_header: "Act/OfficialNumber"
+      title:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Act/Title"
+      current_to_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Act/CurrentToDate"
+      link_to_xml:
+        range: string
+        annotations:
+          gckg:publisher_header: "Act/LinkToXML"
+      link_to_html_toc:
+        range: string
+        annotations:
+          gckg:publisher_header: "Act/LinkToHTMLToC"
+
+  RegulationCatalogEntryRow:
+    description: >-
+      One row per Regulation element in the catalog.
+      Regulation@id is globally unique (9714 distinct; profile candidate key).
+      Regulation/UniqueId is also unique per row (9714 distinct).
+    attributes:
+      publisher_id:
+        range: string
+        required: true
+        identifier: true
+        annotations:
+          gckg:publisher_header: "Regulation@id"
+      olid:
+        range: string
+        annotations:
+          gckg:publisher_header: "Regulation@olid"
+      unique_id:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Regulation/UniqueId"
+      language:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Regulation/Language"
+      title:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Regulation/Title"
+      current_to_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Regulation/CurrentToDate"
+      link_to_xml:
+        range: string
+        annotations:
+          gckg:publisher_header: "Regulation/LinkToXML"
+      link_to_html_toc:
+        range: string
+        annotations:
+          gckg:publisher_header: "Regulation/LinkToHTMLToC"
+
+  ActRegulationLinkRow:
+    description: >-
+      One row per Reg element under RegsMadeUnderAct.
+      Joins an Act catalog entry to a Regulation catalog entry via idRef.
+      Parent Act context (unique_id, language) is denormalized at emit time.
+      Profile: 10,020 links across 890 Act rows with RegsMadeUnderAct.
+    attributes:
+      act_unique_id:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Act/UniqueId"
+      act_language:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Act/Language"
+      regulation_id_ref:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Reg@idRef"

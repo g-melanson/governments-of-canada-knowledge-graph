@@ -1,0 +1,272 @@
+id: https://w3id.org/gckg/source/commons_members_expenditures
+name: commons_members_expenditures
+title: Source schema — Commons Members expenditures (Bronze)
+description: >-
+  Staged row classes for House of Commons Members expenditures. Each pickle/URL entry is one quarterly
+  report; line items are normalized expenditure rows.
+version: 0.1.0
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  gckg: https://w3id.org/gckg/
+
+imports:
+  - linkml:types
+
+default_prefix: gckg
+
+classes:
+  ExpenseReportRow:
+    description: >-
+      One row per expense report file (one pickle entry). A member-quarter
+      can have up to three: contract, travel, hospitality.
+    attributes:
+      member_disclosure_uuid:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "URL path segment (uuid)"
+      report_year:
+        range: integer
+        required: true
+        annotations:
+          gckg:publisher_header: "URL path segment (year)"
+      report_quarter:
+        range: integer
+        required: true
+        annotations:
+          gckg:publisher_header: "URL path segment (quarter)"
+      report_type:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "URL path segment (contract|travel|hospitality)"
+      member_name:
+        range: string
+        annotations:
+          gckg:publisher_header: "Title line — member name"
+          gckg:adapter_note: Parsed from title pattern 'Report – {name} – Q{n} {year}'
+      report_start_date:
+        range: datetime
+        annotations:
+          gckg:adapter_note: First instant of the fiscal quarter (derived, UTC)
+      report_end_date:
+        range: datetime
+        annotations:
+          gckg:adapter_note: Last instant of the fiscal quarter (derived, UTC)
+
+
+  ContractExpenditureRow:
+    description: >-
+      One row per contract expenditure line item within a quarterly report.
+      Composite key: report context + row sequence (duplicate
+      supplier/date/description/total tuples occur within a file).
+    attributes:
+      member_disclosure_uuid:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "URL path segment (uuid)"
+          gckg:adapter_field: "member_disclosure_uuid"
+      report_year:
+        range: integer
+        required: true
+        annotations:
+          gckg:publisher_header: "URL path segment (year)"
+      report_quarter:
+        range: integer
+        required: true
+        annotations:
+          gckg:publisher_header: "URL path segment (quarter)"
+      row_number:
+        range: integer
+        annotations:
+          gckg:adapter_note: Zero-based sequence within the contract report file
+      supplier:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Supplier"
+      description:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Description"
+      expense_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Date"
+      total:
+        range: float
+        annotations:
+          gckg:publisher_header: "Total"
+      member_name:
+        range: string
+        annotations:
+          gckg:publisher_header: "Title line — member name"
+          gckg:adapter_note: >
+            Parsed from title pattern 'Report – {name} – Q{n} {year}'
+
+  HospitalityExpenditureRow:
+    description: >-
+      One row per hospitality expenditure line within a quarterly report.
+      Composite key: (member_disclosure_uuid, report_year, report_quarter,
+      claim_id) — claim IDs are mostly unique per report (12 cross-report
+      collisions in corpus).
+    attributes:
+      member_disclosure_uuid:
+        range: string
+        annotations:
+          gckg:publisher_header: "URL path segment (uuid)"
+      report_year:
+        range: integer
+      report_quarter:
+        range: integer
+      claim_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Claim"
+      expense_date:
+        range: string
+        annotations:
+          gckg:publisher_header: "Date"
+      location:
+        range: string
+        annotations:
+          gckg:publisher_header: "Location"
+      total_attendees:
+        range: integer
+        annotations:
+          gckg:publisher_header: "Total of Attendees"
+      description:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Purpose of Hospitality"
+      event_type:
+        range: string
+        annotations:
+          gckg:publisher_header: "Type of Event"
+      supplier:
+        range: string
+        annotations:
+          gckg:publisher_header: "Supplier"
+      total:
+        range: float
+        annotations:
+          gckg:publisher_header: "Total"
+
+  TravelExpenditureRow:
+    description: >-
+      One row per travel claim summary within a report. Identified by
+      (member_disclosure_uuid, report_year, report_quarter, claim_id).
+      Carries aggregate cost breakdown; first row in each claim group.
+    attributes:
+      member_disclosure_uuid:
+        range: string
+        annotations:
+          gckg:publisher_header: "URL path segment (uuid)"
+      report_year:
+        range: integer
+      report_quarter:
+        range: integer
+      claim_id:
+        range: string
+        annotations:
+          gckg:publisher_header: "Claim"
+      start_date:
+        range: datetime
+        annotations:
+          gckg:publisher_header: "Travel start date"
+      end_date:
+        range: datetime
+        annotations:
+          gckg:publisher_header: "Travel end date"
+      transportation:
+        range: float
+        annotations:
+          gckg:publisher_header: "Transportation"
+      accommodations:
+        range: float
+        annotations:
+          gckg:publisher_header: "Accommodations"
+      meals_and_incidentals:
+        range: float
+        annotations:
+          gckg:publisher_header: "Meals and Incidentals"
+      points_reg:
+        range: float
+        annotations:
+          gckg:publisher_header: "Points Reg."
+      points_spec:
+        range: float
+        annotations:
+          gckg:publisher_header: "Points Spec."
+      points_usa:
+        range: float
+        annotations:
+          gckg:publisher_header: "Points U.S.A."
+      total:
+        range: float
+        annotations:
+          gckg:publisher_header: "Total"
+
+  TravelClaimSegmentRow:
+    description: >-
+      One row per trip leg / segment within a travel claim. Carries traveller
+      and route detail; monetary columns are empty on segment rows.
+    attributes:
+      member_disclosure_uuid:
+        range: string
+        required: true
+      report_year:
+        range: integer
+        required: true
+      report_quarter:
+        range: integer
+        required: true
+      claim_id:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Claim"
+      segment_index:
+        range: integer
+        annotations:
+          gckg:adapter_note: Zero-based sequence of segment rows within the claim group
+      start_date:
+        range: datetime
+        annotations:
+          gckg:publisher_header: "Travel start date"
+      end_date:
+        range: datetime
+        annotations:
+          gckg:publisher_header: "Travel end date"
+      traveller_name:
+        range: string
+        annotations:
+          gckg:publisher_header: "Traveller Name"
+      traveller_type:
+        range: string
+        annotations:
+          gckg:publisher_header: "Traveller Type"
+      description:
+        range: string
+        annotations:
+          gckg:publisher_header: "Purpose of Travel"
+      segment_date:
+        range: datetime
+        annotations:
+          gckg:publisher_header: "Dates"
+      departure:
+        range: string
+        annotations:
+          gckg:publisher_header: "Departure"
+      destination:
+        range: string
+        annotations:
+          gckg:publisher_header: "Destination"
+      transportation:
+        range: string
+        annotations:
+          gckg:publisher_header: "Transportation"
