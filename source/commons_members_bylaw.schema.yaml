@@ -1,0 +1,257 @@
+id: https://w3id.org/gckg/source/commons_bylaw_10000_34
+name: commons_bylaw_10000_34_source
+title: Source schema — Commons Members By-Law 10000 amendment 34 (Bronze)
+description: >-
+  Staged row classes for the House of Commons Members By-Law XML
+  (https://www.ourcommons.ca/Content/ByLaws/10000/10000_34/10000_E.xml).
+  One class per independently addressable entity level.
+version: 0.1.0
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  gckg: https://w3id.org/gckg/
+
+imports:
+  - linkml:types
+
+default_prefix: gckg
+default_range: string
+
+classes:
+
+  ByLawDocumentRow:
+    description: >-
+      Singleton metadata record for the Bill document itself.
+      One row per ingested XML file.
+    attributes:
+      long_title:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Identification/LongTitle"
+      running_head:
+        range: string
+        annotations:
+          gckg:publisher_header: "Identification/RunningHead"
+      bill_origin:
+        range: string
+        annotations:
+          gckg:publisher_header: "Bill@bill-origin"
+      bill_type:
+        range: string
+        annotations:
+          gckg:publisher_header: "Bill@bill-type"
+      lang:
+        range: string
+        annotations:
+          gckg:publisher_header: "Bill@lang"
+      date_time:
+        range: datetime
+        annotations:
+          gckg:publisher_header: "Bill@date-time"
+      stage:
+        range: string
+        annotations:
+          gckg:publisher_header: "Stages@stage"
+
+  ByLawSectionRow:
+    description: >-
+      One row per Section in the Body of the By-Law.
+      Section/Label is the candidate key (integers 1–129, fill_rate=1.0,
+      distinct_count=129).
+      Heading context (lv1–lv3) is denormalized from the preceding sibling
+      Heading elements in document order; the adapter tracks a context stack
+      and writes these slots at emit time rather than reading them from a
+      child element. No separate ByLawHeading node is emitted.
+    attributes:
+      section_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/Label"
+      marginal_note:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/MarginalNote"
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/Text"
+      heading_lv1:
+        range: string
+        annotations:
+          gckg:publisher_header: "Heading/TitleText"
+          gckg:adapter_note: >-
+            Ancestor context — title of the most recent level-1 Heading sibling
+            preceding this Section in Body document order (e.g. "General Provisions").
+      heading_lv2:
+        range: string
+        annotations:
+          gckg:publisher_header: "Heading/TitleText"
+          gckg:adapter_note: >-
+            Ancestor context — title of the most recent level-2 Heading sibling
+            preceding this Section (e.g. "Use of House of Commons Resources").
+            Null when no level-2 heading has been seen since the last level-1 heading.
+      heading_lv3:
+        range: string
+        annotations:
+          gckg:publisher_header: "Heading/TitleText"
+          gckg:adapter_note: >-
+            Ancestor context — title of the most recent level-3 Heading sibling
+            preceding this Section (e.g. "Offices and Services").
+            Null when no level-3 heading has been seen since the last level-2 heading.
+
+  ByLawSubsectionRow:
+    description: >-
+      One row per Subsection nested under a Section.
+      No globally unique key — identified by (section_label, subsection_label).
+      205 instances; Subsection/Label is a positional enum (fill_rate=1.0,
+      distinct_count=15, e.g. "(1)", "(1.1)").
+    attributes:
+      section_label:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Section/Label"
+      subsection_label:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+      marginal_note:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/MarginalNote"
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Text"
+
+  ByLawParagraphRow:
+    description: >-
+      One row per Paragraph nested under a Section, Subsection, or Definition.
+    attributes:
+      section_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/Label"
+      subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+      paragraph_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Paragraph/Label"
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Paragraph/Text"
+
+  ByLawSubParagraphRow:
+    description: >-
+      One row per Sub-Paragraph nested under a Paragraph.
+    attributes:
+      subparagraph_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subparagraph/Label"
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subparagraph/Text"
+      section_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/Label"
+      subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+      paragraph_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Paragraph/Label"
+
+  ByLawDefinedTermRow:
+    description: >-
+      One row per defined term inline in a Text element.
+      37 distinct English terms (Text/DefinedTermEn, fill_rate=1.0),
+      35 distinct French terms (Text/DefinedTermFr).
+    attributes:
+      term_en:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Text/DefinedTermEn"
+      term_fr:
+        range: string
+        annotations:
+          gckg:publisher_header: "Text/DefinedTermFr"
+      defined_in_section_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/Label"
+          gckg:adapter_note: >-
+            Ancestor context — the Section label in which this term is defined.
+      defined_in_subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+          gckg:adapter_note: >-
+            Ancestor context — the Subsection label in which this term is defined.
+      text:
+        range: string
+        annotations:
+          gckg:publisher_header: "Definition/Text"
+
+  ByLawExternalRefRow:
+    description: >-
+      One row per unique external legal reference cited in the By-Law.
+      28 XRefExternal occurrences referencing 7 distinct Acts or Regulations
+      (Text/XRefExternal, fill_rate=1.0; XRefExternal@reference-type ∈ {act, regulation}).
+    attributes:
+      reference_name:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Text/XRefExternal"
+      reference_type:
+        range: string
+        annotations:
+          gckg:publisher_header: "XRefExternal@reference-type"
+      cited_in_section_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/Label"
+      cited_in_subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+
+  ByLawTermCrossRefRow:
+    description: >-
+      One row per DefinitionRef citing another defined term within a definition block.
+    attributes:
+      source_term_en:
+        range: string
+        annotations:
+          gckg:publisher_header: "Text/DefinedTermEn"
+          gckg:adapter_note: >-
+            Ancestor context — the English defined term whose Definition block
+            contains this DefinitionRef (e.g. "Board"). Null when the ref appears
+            inline in section or subsection body text rather than inside a
+            Definition element.
+      cited_term_en:
+        range: string
+        required: true
+        annotations:
+          gckg:publisher_header: "Text/DefinitionRef"
+      cited_in_section_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Section/Label"
+      cited_in_subsection_label:
+        range: string
+        annotations:
+          gckg:publisher_header: "Subsection/Label"
+
