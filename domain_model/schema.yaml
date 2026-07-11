@@ -13,6 +13,7 @@ imports:
   - linkml:types
   - foundation/types
   - domains/house_of_commons
+  - domains/bylaw
 
 default_prefix: gckg
 
@@ -29,22 +30,12 @@ classes:
       object:
         range: Node
 
-  PersonAssociatedWithPoliticalParty:
-    is_a: Triple
-    slot_usage:
-      subject:
-        range: Person
-      predicate:
-        equals_string: associatedWith
-      object:
-        range: PoliticalParty
-
   PersonHasRoleMemberOfParliament:
     is_a: Triple
     slot_usage:
       subject:
         range: Person
       predicate:
-        equals_string: hasRole
+        equals_string: HAS_ROLE
       object:
         range: MemberOfParliament

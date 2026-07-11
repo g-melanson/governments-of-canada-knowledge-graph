@@ -35,8 +35,7 @@ def fetch_raw(ctx: RunContext, source_cfg: dict[str, Any]) -> tuple[Path, dict[s
     if source_cfg.get("local_only") and ctx.fetch_policy != "local-file":
         raise FetchError(
             f"{ctx.source} must be ingested from a local file. "
-            "Download and extract the publisher CSV, then rerun with "
-            "--fetch-policy local-file --input <path/to/csv>"
+            "Rerun with --input <path> or --fetch-policy local-file --input <path>"
         )
 
     if ctx.fetch_policy == "local-file":

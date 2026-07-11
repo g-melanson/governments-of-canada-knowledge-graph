@@ -14,7 +14,7 @@ def _default_run_id() -> str:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    parser = argparse.ArgumentParser(prog="validate")
+    parser = argparse.ArgumentParser(prog="transforms")
     sub = parser.add_subparsers(dest="command", required=True)
 
     run_p = sub.add_parser("run", help="Transform Bronze records → Silver")

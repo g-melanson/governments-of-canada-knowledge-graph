@@ -12,7 +12,16 @@ default_prefix: gckg
 
 classes:
 
+  UniversalContainer:
+    tree_root: true
+    slots:
+      - entries
+
+  BaseEntity:
+    abstract: true
+
   Node:
+    is_a: BaseEntity
     abstract: true
     slots:
       - id
@@ -29,9 +38,16 @@ classes:
     abstract: true
     class_uri: prov:Entity
 
+  Activity:
+    is_a: Entity
+    class_uri: prov:Activity
+
   Agent:
     is_a: Entity
     class_uri: prov:Agent
+
+  Document:
+    is_a: Entity
 
   Membership:
     is_a: Concept
@@ -48,20 +64,19 @@ classes:
     is_a: Concept
     class_uri: org:Role
 
-slots:
-
-  id:
-    identifier: true
-    range: uriorcurie
-    required: true
-
-  name:
-    range: string
-    slot_uri: rdfs:label
-
-  labels:
-    range: string
-    multivalued: true
-    slot_uri: rdf:type
-
-
+  Relationship:
+    is_a: BaseEntity
+    description: A reified subject–predicate–object triple between two nodes.
+    attributes:
+      id:
+        range: string
+        identifier: true
+      subject:
+        range: string
+        description: ID of the source node.
+      predicate:
+        range: string
+        description: Relationship type label.
+      object:
+        range: string
+        description: ID of the target node.

@@ -11,6 +11,7 @@ from ingest.config import get_source_config
 from ingest.context import RunContext
 from ingest.errors import EmptySourceError
 from ingest.fetch.client import fetch_raw
+from ingest.normalize import SchemaNormalizer
 from ingest.utils import staging_json_default
 
 log = logging.getLogger(__name__)
@@ -19,6 +20,8 @@ log = logging.getLogger(__name__)
 def run_ingest(ctx: RunContext) -> dict:
     adapter = get_adapter(ctx.source)
     source_cfg = get_source_config(ctx.source)
+    normalizer = SchemaNormalizer(ctx.schema_path)
+
     ctx.run_dir.mkdir(parents=True, exist_ok=True)
 
     started_at = datetime.now(timezone.utc)
@@ -28,7 +31,7 @@ def run_ingest(ctx: RunContext) -> dict:
     rejected_count = 0
     with ctx.records_path.open("w", encoding="utf-8") as fout:
         for raw_row in adapter.parse(raw_path):
-            row = adapter.normalize(raw_row)
+            row = normalizer.normalize(raw_row["_row_class"], raw_row)
             fout.write(json.dumps(row, ensure_ascii=False, default=staging_json_default) + "\n")
             record_count += 1
 

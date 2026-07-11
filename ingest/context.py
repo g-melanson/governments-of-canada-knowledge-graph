@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 FetchPolicy = Literal["default", "refresh", "cache-only", "local-file"]
 
 
@@ -16,6 +18,10 @@ class RunContext:
     staging_root: Path
     fetch_policy: FetchPolicy = "default"
     input_path: Path | None = None  # local-file mode
+
+    @property
+    def schema_path(self) -> Path:
+        return REPO_ROOT / "source" / f"{self.source}.schema.yaml"
 
     @property
     def source_dir(self) -> Path:

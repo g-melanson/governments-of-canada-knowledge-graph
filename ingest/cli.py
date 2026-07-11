@@ -9,12 +9,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ingest.adapters.registry import list_sources
+from ingest.config import get_source_config
 from ingest.context import RunContext
 from ingest.runner import run_ingest
 
 # Import adapters so @register runs
 import ingest.adapters.commons.members  # noqa: F401
-
+import ingest.adapters.commons.members_bylaw  # noqa: F401
+import ingest.adapters.commons.members_expenditures  # noqa: F401
 
 def _default_run_id() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
@@ -44,12 +46,28 @@ def main() -> None:
             print(name)
         return
 
+    fetch_policy = args.fetch_policy
+    input_path = args.input
+
+    # --input implies local-file; local_only sources default to their configured path.
+    if input_path is not None and fetch_policy == "default":
+        fetch_policy = "local-file"
+
+    if fetch_policy == "default":
+        source_cfg = get_source_config(args.source)
+        if source_cfg.get("local_only"):
+            fetch_policy = "local-file"
+            if input_path is None:
+                url = source_cfg.get("url", "")
+                if url.startswith("local://"):
+                    input_path = Path(url.removeprefix("local://"))
+
     ctx = RunContext(
         source=args.source,
         run_id=args.run_id,
         staging_root=args.staging_root,
-        fetch_policy=args.fetch_policy,
-        input_path=args.input,
+        fetch_policy=fetch_policy,
+        input_path=input_path,
     )
     manifest = run_ingest(ctx)
     print(json.dumps(manifest["output"], indent=2))

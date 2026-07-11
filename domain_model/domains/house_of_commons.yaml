@@ -1,37 +1,188 @@
 id: https://w3id.org/gckg/domains/commons
-name: gckg_parliament
-title: GCKG parliament domain
+name: gckg_house_of_commons
+title: GCKG House of Commons domain
 description: House of Commons entities — members, districts, caucus.
 version: 0.1.0
 
 imports:
-  - ../foundation/prefixes
   - linkml:types
+  - ../domains/business
+  - ../foundation/slots
   - ../foundation/types
+  - ../foundation/prefixes
 
 default_prefix: gckg
 
 classes:
-
-### PARLIAMENTARY STRUCTURE ###
-
-  FederalElectoralDistrict:
-    is_a: Entity
-    class_uri: gckg:FederalElectoralDistrict
-
+  BoardOfInternalEconomyTransperancyActivity:
+    is_a: Activity
+  ContractExpenseClaim:
+    is_a: Document
+    slots:
+      - id
+      - description
+      - expense_date
+      - total
+  HospitalityExpenseClaim:
+    is_a: Document
+    slots:
+      - id
+      - description
+      - expense_date
+      - event_type
+      - total_attendees
+      - total
+  TravelExpenseClaim:
+    is_a: Document
+    slots:
+      - id
+      - accommodations
+      - meals_and_incidentals
+      - transportation
+      - start_date
+      - end_date
+      - total
   MemberOfParliament:
     is_a: Role
-    class_uri: gckg:MemberOfParliament
-    attributes:
-      start_date:
-        range: datetime
-      end_date:
-        range: datetime
-
-  HouseOfCommonsSeat:
+    slots:
+      - start_date
+      - end_date
+  MembersExpenditureReport:
+    is_a: Document
+    slots:
+      - start_date
+      - end_date
+  MiscellaneousExpendituresAccount:
     is_a: Entity
-    class_uri: gckg:HouseOfCommonsSeat
-  
-  PoliticalParty:
-    is_a: Organization
-    class_uri: gckg:PoliticalParty
+
+########################################################
+### RELATIONSHIPS ###
+########################################################
+
+  PersonHasRoleMemberOfParliament:
+    is_a: Relationship
+    slots:
+      - id
+      - start_date
+      - end_date
+    attributes:
+      subject:
+        range: Person
+      predicate:
+        range: string
+        ifabsent: "HAS_PART"
+      object:
+        range: MemberOfParliament
+
+  MembersExpenditureReportHasContractExpenseClaim:
+    is_a: Relationship
+    slots:
+      - id
+      - date_time
+    attributes:
+      subject:
+        range: MembersExpenditureReport
+      predicate:
+        range: string
+        ifabsent: "CLAIM"
+      object:
+        range: ContractExpenseClaim
+
+  MembersExpenditureReportHasHospitalityExpenseClaim:
+    is_a: Relationship
+    slots:
+      - id
+      - expense_date
+    attributes:
+      subject:
+        range: MembersExpenditureReport
+      predicate:
+        range: string
+        ifabsent: "CLAIM"
+      object:
+        range: HospitalityExpenseClaim
+
+  MembersExpenditureReportHasTravelExpenseClaim:
+    is_a: Relationship
+    slots:
+      - id
+      - start_date
+      - end_date
+    attributes:
+      subject:
+        range: MembersExpenditureReport
+      predicate:
+        range: string
+        ifabsent: "CLAIM"
+      object:
+        range: TravelExpenseClaim
+
+  ContractExpenseClaimHasPrincipalParty:
+    is_a: Relationship
+    slots:
+      - id
+      - expense_date
+    attributes:
+      subject:
+        range: ContractExpenseClaim
+      predicate:
+        range: string
+        ifabsent: "PRINCIPAL_PARTY"
+      object:
+        range: Agent
+
+  ContractExpenseClaimHasSupplier:
+    is_a: Relationship
+    slots:
+      - id
+      - expense_date
+    attributes:
+      subject:
+        range: ContractExpenseClaim
+      predicate:
+        range: string
+        ifabsent: "CONTRACT_PARTY"
+      object:
+        range: Agent
+
+  ContractExpenseClaimFundedByMiscellaneousExpendituresAccount:
+    is_a: Relationship
+    slots:
+      - id
+      - expense_date
+    attributes:
+      subject:
+        range: ContractExpenseClaim
+      predicate:
+        range: string
+        ifabsent: "FUND"
+      object:
+        range: MiscellaneousExpendituresAccount
+
+  HospitalityExpenseClaimFundedByMiscellaneousExpendituresAccount:
+    is_a: Relationship
+    slots:
+      - id
+      - expense_date
+    attributes:
+      subject:
+        range: HospitalityExpenseClaim
+      predicate:
+        range: string
+        ifabsent: "FUND"
+      object:
+        range: MiscellaneousExpendituresAccount
+
+  TravelExpenseClaimFundedByMiscellaneousExpendituresAccount:
+    is_a: Relationship
+    slots:
+      - id
+      - expense_date
+    attributes:
+      subject:
+        range: TravelExpenseClaim
+      predicate:
+        range: string
+        ifabsent: "FUND"
+      object:
+        range: MiscellaneousExpendituresAccount
