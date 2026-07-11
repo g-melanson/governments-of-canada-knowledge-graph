@@ -2,10 +2,12 @@
 
 **Stage 3** maps Bronze `records.jsonl` to **Silver graph fragments**, materializing domain entities and relationships informed by `domain_model/`.
 
-**Implementation reality (read first):** the transform is driven by **Python materializers** in the `transforms/` package (plural). A LinkML-Map-style spec (`transforms/commons_members_to_gckg.transform.yaml`) exists on disk as a declarative reference but is **not loaded or executed** by the runner. `linkml-map` is **not** a project dependency.
+**Implementation reality (read first):** the transform is driven by **`YamlMapEngine`** (`transforms/map_engine.py`). Transform specs live under `transforms/schemas/*.transform.yaml` and are executed at runtime when `map_mode: yaml` is set in `transforms/config/maps.yaml`. All three Commons sources use this path. The legacy Python materializer path remains in the runner but is unused. `linkml-map` is **not** a project dependency.
 
-Pilot source: **`commons_members`** (small, well-understood MP semantics).  
-Second source: **`open_canada_federal_election_contribution`** (finance/election domain) — **deferred** until the members path is complete and Stage 2 has a source schema for contributions.
+**Overview:** see [`README.md`](README.md) for current status.
+
+Pilot sources (implemented): **`commons_members`**, **`commons_members_bylaw`**, **`commons_members_expenditures`**.  
+Deferred: **`open_canada_federal_election_contribution`** (finance/election domain).
 
 Implement **top to bottom**. Each section: **what it does** → design/code guidance, with the current state called out.
 
@@ -16,22 +18,23 @@ Implement **top to bottom**. Each section: **what it does** → design/code guid
 | Area | State |
 |------|-------|
 | `transforms/` package + CLI + runner + engine | **Done** — `python -m transforms run …` works end-to-end |
+| `YamlMapEngine` (`map_mode: yaml`) | **Done** — active runtime for all registered sources |
 | Streaming Bronze → materialize → Silver fragments + manifest | **Done** |
-| `commons_members` materializer | **Partial** — emits only `Person`, `MemberOfParliament`, generic `RELATIONSHIP` |
-| Deterministic GCKG IDs | **Partial** — inline helpers, colon-delimited URIs, **no slugs**, no district/seat/party IDs |
-| LinkML-Map execution | **Not wired** — spec file is reference-only; no `linkml-map` dependency |
+| `commons_members` transform | **Done** — Person, MemberOfParliament, `PersonHasRoleMemberOfParliament` |
+| `commons_members_bylaw` transform | **Done** — bylaw structure, defined terms, cross-references |
+| `commons_members_expenditures` transform | **Done** — reports, claims, Person stubs, reified triples |
+| Deterministic GCKG IDs | **Partial** — colon-delimited URIs; **no slugs** for district/seat/party yet |
 | `experimental/` lane + `--map` / `--experimental` flags | **Not implemented** |
-| Tests (`transforms/tests/`) | **Not implemented** — directory does not exist |
-| Packaging (`.[transform]` extra, console script, `linkml-map` dep) | **Not implemented** |
-| Contributions source | **Deferred** (adapter file orphaned — see §12) |
+| Tests (`transforms/tests/`) | **Done** — `test_map_engine.py` (some paths may need `schemas/` prefix fix) |
+| Packaging (`transforms` console script) | **Done** — wired in `pyproject.toml` |
+| `linkml-map` / `LinkMapEngine` | **Deferred** — `YamlMapEngine` is sufficient today |
+| Open Canada contributions | **Deferred** (adapter orphaned — see §12) |
 
-**Known defects to clean up:**
+**Known gaps:**
 
-- `transforms/cli.py` sets `argparse` `prog="validate"` (copied from the validate CLI).
-- `transforms/utils.py` is incomplete (syntax error at `def make_bronze_reference`, references a non-existent `context.domain_model_path`) and is **not imported** anywhere.
-- `transforms/config/get_map_config()` exists but the runner ignores it (calls `load_maps()[ctx.source]` directly), so `map_path` is never path-resolved at runtime.
-- `TransformContext.map_path` (a property returning `{silver_dir}/map.json`) is unused.
-- No `transforms/__init__.py` or `transforms/materializers/__init__.py`.
+- District + Seat + Party materialization for members not yet in transform spec.
+- `transforms/utils.py` may be stale/unused — verify before relying on it.
+- `TransformContext.map_path` property is unused.
 
 ---
 
@@ -110,16 +113,16 @@ When district/party/seat materialization is added, implement slugs and document 
 
 | Phase | Work | Status | Output |
 |-------|------|--------|--------|
-| **0 — Domain prep** | `house_of_commons.yaml` + root triples for MP tenure | Partial | `cd domain_model && gen-yaml schema.yaml` passes |
+| **0 — Domain prep** | `house_of_commons.yaml`, `bylaw.yaml` + root triples | **Done** | `cd domain_model && gen-yaml schema.yaml` passes |
 | **1 — Platform** | `transforms/` package: context, errors, config registry, engine, runner, CLI | **Done** | `python -m transforms run …` |
-| **2 — IDs + bronze_reference** | Deterministic URI builders + `make_bronze_reference()` | Partial | Inline in materializer/base; no `ids.py`, no slugs |
-| **3 — Map (members)** | `commons_members_to_gckg.transform.yaml` (LinkML-Map style) | Partial | File exists, **not executed** |
-| **4 — Materializer (members)** | `transforms/materializers/commons_members.py` | Partial | 3 fragment types (Person, MP, RELATIONSHIP) |
-| **5 — Pilot run** | End-to-end: bronze MP fixture → silver fragments | **Done** | `silver/commons_members/{run_id}/` |
-| **6 — Tests** | Map/materializer/integration tests | Not started | `transforms/tests/` does not exist |
-| **7 — Packaging** | `transforms` in `pyproject.toml`, deps, console script, README | Not started | — |
+| **2 — YAML map engine** | `YamlMapEngine` + `map_mode: yaml` in `maps.yaml` | **Done** | `transforms/map_engine.py` |
+| **3 — Commons transforms** | Three specs under `transforms/schemas/` | **Done** | members, bylaw, expenditures |
+| **4 — IDs + bronze_reference** | Deterministic URI `expr` in specs | **Partial** | No name-based slugs for district/seat/party |
+| **5 — Pilot runs** | End-to-end Bronze → Silver for all three sources | **Done** | `silver/{source}/{run_id}/` |
+| **6 — Tests** | `test_map_engine.py` | **Done** | `transforms/tests/` |
+| **7 — Packaging** | `transforms` console script in `pyproject.toml` | **Done** | `transforms` / `python -m transforms` |
 | **8 — Experimental lane** | `--map experimental/…` flag | Not started | — |
-| **9 — Contributions** | Source schema (M2), finance domain classes, map + materializer | Deferred | Post-pilot |
+| **9 — Open Canada contributions** | Source schema (M2), finance domain, transform spec | Deferred | Post-pilot |
 
 ---
 
@@ -445,15 +448,16 @@ Bronze row → finance/election fragments (after members pilot and M2 source sch
 ## 13. Done criteria
 
 - [x] `transforms/` package with CLI and runner
-- [x] `transforms/config/maps.yaml` registers `commons_members`
-- [~] `transforms/commons_members_to_gckg.transform.yaml` exists — but is reference-only and not validated by `linkml-map`
-- [~] Materializer emits fragments from one Bronze MP row — currently Person + MemberOfParliament + generic RELATIONSHIP only (no District/Seat/Party/named tenure triple)
+- [x] `transforms/config/maps.yaml` registers all three Commons sources with `map_mode: yaml`
+- [x] Transform specs under `transforms/schemas/` executed by `YamlMapEngine`
+- [x] All three Commons sources materialize Silver fragments end-to-end
+- [~] Members transform — Person + MemberOfParliament + tenure triple; no District/Seat/Party yet
 - [~] Deterministic GCKG IDs — implemented, but no name-based slugs yet
-- [x] `silver/commons_members/{run_id}/fragments.jsonl` + `manifest.json` written (plus `quarantine.jsonl`)
+- [x] `silver/{source}/{run_id}/fragments.jsonl` + `manifest.json` + `quarantine.jsonl`
 - [x] `bronze_reference` on every Silver fragment
-- [ ] `pytest transforms/tests` passes offline — no tests exist
-- [x] README Milestone 3 section reflects the actual `transforms/` implementation
-- [x] Contributions path documented as deferred
+- [x] `transforms/tests/test_map_engine.py` exists and is wired in `pyproject.toml`
+- [x] Milestone 3 README reflects actual implementation
+- [x] Open Canada contributions path documented as deferred
 
 ---
 
@@ -504,7 +508,7 @@ gckg/
 |-------|-------|--------|--------|
 | 1 Ingest | raw publisher | staging JSONL | — |
 | 2 Validate | staging | Bronze JSONL | `source/*.schema.yaml` |
-| **3 Transform** | **Bronze** | **Silver fragments** | **Python materializer (+ `domain_model/` reference)** |
+| **3 Transform** | **Bronze** | **Silver fragments** | **YAML transform spec via `YamlMapEngine` (+ `domain_model/` reference)** |
 | 4 Integrate | Silver fragments | merged Silver | — |
 | 5 Publish | merged Silver | Gold | `domain_model/schema.yaml` validation |
 

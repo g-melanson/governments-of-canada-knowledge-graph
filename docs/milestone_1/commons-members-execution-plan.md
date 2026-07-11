@@ -1,5 +1,7 @@
 # Execution plan — `commons_members` adapter (with code)
 
+> **Status (2026-07):** Milestone 1 is **done** for three Commons sources (`commons_members`, `commons_members_bylaw`, `commons_members_expenditures`). This document is a **historical build guide** for the original members adapter. See [`README.md`](README.md) for current status and [`../ingest-adapter-refactor-guide.md`](../ingest-adapter-refactor-guide.md) for the `SchemaNormalizer` refactor.
+
 Stage 1 ingest for [MemberOfParliament XML](https://www.ourcommons.ca/members/en/search/xml).  
 Registry name: **`commons_members`** · Module: `ingest/adapters/commons/members.py`
 
