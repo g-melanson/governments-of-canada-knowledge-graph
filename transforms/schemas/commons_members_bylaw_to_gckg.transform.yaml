@@ -1,0 +1,229 @@
+id: https://w3id.org/gckg/transforms/commons_members_bylaw_to_gckg
+name: commons_members_bylaw_to_gckg
+title: Commons members bylaw Bronze → GCKG domain
+
+class_derivations:
+
+  # ── Node derivations ──────────────────────────────────────────────────────
+
+  Act:
+    populated_from: ByLawExternalRefRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:Act:' + str(name)"
+      name:
+        expr: "name"
+
+  ByLaw:
+    populated_from: ByLawDocumentRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:10000'"
+      name:
+        expr: "long_title"
+      bill_origin:
+        expr: "bill_origin"
+      bill_type:
+        expr: "bill_type"
+
+  ByLawSection:
+    populated_from: ByLawSectionRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label)"
+      label:
+        expr: "section_label"
+      marginal_note:
+        expr: "marginal_note"
+      text:
+        expr: "text"
+      heading_lv1:
+        expr: "heading_lv1"
+      heading_lv2:
+        expr: "heading_lv2"
+      heading_lv3:
+        expr: "heading_lv3"
+
+  ByLawSubsection:
+    populated_from: ByLawSubsectionRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Subsection:' + str(subsection_label)"
+      section_label:
+        expr: "section_label"
+      label:
+        expr: "subsection_label"
+      text:
+        expr: "text"
+      marginal_note:
+        expr: "marginal_note"
+
+  ByLawParagraph:
+    populated_from: ByLawParagraphRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + (':Subsection:' + str(subsection_label) if subsection_label else '') + ':Paragraph:' + str(paragraph_label)"
+      section_label:
+        expr: "section_label"
+      subsection_label:
+        expr: "subsection_label"
+      label:
+        expr: "paragraph_label"
+      text:
+        expr: "text"
+
+  ByLawSubParagraph:
+    populated_from: ByLawSubParagraphRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + (':Subsection:' + str(subsection_label) if subsection_label else '') + ':Paragraph:' + str(paragraph_label) + ':SubParagraph:' + str(subparagraph_label)"
+      section_label:
+        expr: "section_label"
+      subsection_label:
+        expr: "subsection_label"
+      paragraph_label:
+        expr: "paragraph_label"
+      subparagraph_label:
+        expr: "subparagraph_label"
+      text:
+        expr: "text"
+
+  ByLawDefinedTerm:
+    populated_from: ByLawDefinedTermRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:DefinedTerm:' + str(term_en)"
+      term_en:
+        expr: "term_en"
+      term_fr:
+        expr: "term_fr"
+      defined_in_section_label:
+        expr: "defined_in_section_label"
+      defined_in_subsection_label:
+        expr: "defined_in_subsection_label"
+      text:
+        expr: "text"
+
+  # ── Containment relationship derivations ─────────────────────────────────
+  #
+  # Each edge is emitted from the child row (which carries both parent and
+  # child context), so both subject and object IDs can be constructed in a
+  # single row pass without cross-row state.
+
+  ByLawHasPartByLawSection:
+    populated_from: ByLawSectionRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:10000:HAS_PART:Section:' + str(section_label)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:10000'"
+      predicate:
+        expr: "'HAS_PART'"
+      object:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label)"
+
+  ByLawSectionHasPartByLawSubsection:
+    populated_from: ByLawSubsectionRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':HAS_PART:Subsection:' + str(subsection_label)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label)"
+      predicate:
+        expr: "'HAS_PART'"
+      object:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Subsection:' + str(subsection_label)"
+
+  # Paragraph directly under Section (no subsection)
+  ByLawSectionHasPartByLawParagraph:
+    populated_from: ByLawParagraphRow
+    when: "subsection_label is None"
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':HAS_PART:Paragraph:' + str(paragraph_label)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label)"
+      predicate:
+        expr: "'HAS_PART'"
+      object:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Paragraph:' + str(paragraph_label)"
+
+  ByLawSubsectionHasPartByLawParagraph:
+    populated_from: ByLawParagraphRow
+    when: "subsection_label is not None"
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Subsection:' + str(subsection_label) + ':HAS_PART:Paragraph:' + str(paragraph_label)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Subsection:' + str(subsection_label)"
+      predicate:
+        expr: "'HAS_PART'"
+      object:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Subsection:' + str(subsection_label) + ':Paragraph:' + str(paragraph_label)"
+
+  ByLawParagraphHasPartByLawSubParagraph:
+    populated_from: ByLawSubParagraphRow
+    when: "paragraph_label is not None"
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + (':Subsection:' + str(subsection_label) if subsection_label else '') + ':Paragraph:' + str(paragraph_label) + ':HAS_PART:SubParagraph:' + str(subparagraph_label)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + (':Subsection:' + str(subsection_label) if subsection_label else '') + ':Paragraph:' + str(paragraph_label)"
+      predicate:
+        expr: "'HAS_PART'"
+      object:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + (':Subsection:' + str(subsection_label) if subsection_label else '') + ':Paragraph:' + str(paragraph_label) + ':SubParagraph:' + str(subparagraph_label)"
+
+  ByLawSubsectionHasPartByLawSubParagraph:
+    populated_from: ByLawSubParagraphRow
+    when: "paragraph_label is None and subsection_label is not None"
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Subsection:' + str(subsection_label) + ':HAS_PART:SubParagraph:' + str(subparagraph_label)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Subsection:' + str(subsection_label)"
+      predicate:
+        expr: "'HAS_PART'"
+      object:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(section_label) + ':Subsection:' + str(subsection_label) + ':Paragraph:None:SubParagraph:' + str(subparagraph_label)"
+
+  # ── Semantic relationship derivations ─────────────────────────────────────
+
+  ByLawSectionDefinesDefinedTerm:
+    populated_from: ByLawDefinedTermRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(defined_in_section_label) + ':DEFINES:DefinedTerm:' + str(term_en)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(defined_in_section_label)"
+      predicate:
+        expr: "'DEFINES'"
+      object:
+        expr: "'gckg:Commons:MembersByLaw:DefinedTerm:' + str(term_en)"
+
+  ByLawSectionReferencesAct:
+    populated_from: ByLawExternalRefRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(cited_in_section_label) + ':REFERENCES:Act:' + str(reference_name)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(cited_in_section_label)"
+      predicate:
+        expr: "'REFERENCES'"
+      object:
+        expr: "'gckg:Act:' + str(reference_name)"
+
+  # DefinitionRef in subsection body text — subsection cites a defined term inline.
+  # source_term_en is None for all inline refs in this XML (no DefinitionRef inside
+  # Definition blocks), so this fires for every ByLawTermCrossRefRow.
+  ByLawSubsectionReferencesDefinedTerm:
+    populated_from: ByLawTermCrossRefRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(cited_in_section_label) + ':Subsection:' + str(cited_in_subsection_label) + ':REFERENCES:DefinedTerm:' + str(cited_term_en)"
+      subject:
+        expr: "'gckg:Commons:MembersByLaw:Section:' + str(cited_in_section_label) + ':Subsection:' + str(cited_in_subsection_label)"
+      predicate:
+        expr: "'REFERENCES'"
+      object:
+        expr: "'gckg:Commons:MembersByLaw:DefinedTerm:' + str(cited_term_en)"

@@ -1,0 +1,208 @@
+id: https://w3id.org/gckg/transforms/commons_members_expenditures_to_gckg
+title: Commons members expenditures Bronze → GCKG domain
+
+class_derivations:
+
+  # ── Node derivations ──────────────────────────────────────────────────────
+
+  Person:
+    populated_from: ExpenseReportRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersExpenditureReport:Person:' + str(member_name)"
+      name:
+        expr: "member_name"
+
+  AgentFromContract:
+    target_type: Agent
+    populated_from: ContractExpenditureRow
+    when: "supplier"
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersExpenditureReport:ContractExpenseClaim:Agent:' + str(supplier)"
+      name:
+        expr: "supplier"
+
+  AgentFromHospitality:
+    target_type: Agent
+    populated_from: HospitalityExpenditureRow
+    when: "supplier"
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersExpenditureReport:HospitalityExpenseClaim:Agent:' + str(supplier)"
+      name:
+        expr: "supplier"
+
+  ContractExpenseClaim:
+    populated_from: ContractExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:ContractExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      expense_date:
+        expr: "expense_date"
+      total:
+        expr: "total"
+      description:
+        expr: "description"
+
+  HospitalityExpenseClaim:
+    populated_from: HospitalityExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:HospitalityExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(claim_id)"
+      claim_id:
+        expr: "claim_id"
+      expense_date:
+        expr: "expense_date"
+      total:
+        expr: "total"
+      description:
+        expr: "description"
+      total_attendees:
+        expr: "total_attendees"
+      event_type:
+        expr: "event_type"
+
+  MembersExpenditureReport:
+    populated_from: ExpenseReportRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersExpenditureReport:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter)"
+      start_date:
+        expr: "report_start_date"
+      end_date:
+        expr: "report_end_date"
+
+  TravelExpenseClaim:
+    populated_from: TravelExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:TravelExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(claim_id)"
+      claim_id:
+        expr: "claim_id"
+      total:
+        expr: "total"
+      accommodations:
+        expr: "accommodations"
+      meals_and_incidentals:
+        expr: "meals_and_incidentals"
+      transportation:
+        expr: "transportation"
+      start_date:
+        expr: "start_date"
+      end_date:
+        expr: "end_date"
+
+# ── Edge derivations ──────────────────────────────────────────────────────
+
+  MembersExpenditureReportHasContractExpenseClaim:
+    populated_from: ContractExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersExpenditureReportHasContractExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      subject:
+        expr: "'gckg:Commons:MembersExpenditureReport:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter)"
+      predicate:
+        expr: "'CLAIM'"
+      object:
+        expr: "'gckg:Commons:ContractExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      expense_date:
+        expr: "expense_date"
+
+  MembersExpenditureReportHasHospitalityExpenseClaim:
+    populated_from: HospitalityExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersExpenditureReportHasHospitalityExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      subject:
+        expr: "'gckg:Commons:MembersExpenditureReport:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter)"
+      predicate:
+        expr: "'CLAIM'"
+      object:
+        expr: "'gckg:Commons:HospitalityExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      expense_date:
+        expr: "expense_date"
+
+  MembersExpenditureReportHasTravelExpenseClaim:
+    populated_from: TravelExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:MembersExpenditureReportHasTravelExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      subject:
+        expr: "'gckg:Commons:MembersExpenditureReport:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter)"
+      predicate:
+        expr: "'CLAIM'"
+      object:
+        expr: "'gckg:Commons:TravelExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      expense_date:
+        expr: "expense_date"
+
+  ContractExpenseClaimHasPrincipalParty:
+    populated_from: ContractExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:ContractExpenseClaimHasPrincipalParty:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      subject:
+        expr: "'gckg:Commons:ContractExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      predicate:
+        expr: "'PRINCIPAL_PARTY'"
+      object:
+        expr: "'gckg:Commons:MembersExpenditureReport:Person:' + str(member_name)"
+      expense_date:
+        expr: "expense_date"
+
+  ContractExpenseClaimHasContractParty:
+    populated_from: ContractExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:ContractExpenseClaimHasContractParty:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      subject:
+        expr: "'gckg:Commons:ContractExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      predicate:
+        expr: "'CONTRACT_PARTY'"
+      object:
+        expr: "'gckg:Commons:MembersExpenditureReport:ContractExpenseClaim:Agent:' + str(supplier)"
+      expense_date:
+        expr: "expense_date"
+
+  HospitalityExpenseClaimHasPrincipalParty:
+    populated_from: HospitalityExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:HospitalityExpenseClaimHasPrincipalParty:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      subject:
+        expr: "'gckg:Commons:HospitalityExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      predicate:
+        expr: "'PRINCIPAL_PARTY'"
+      object:
+        expr: "'gckg:Commons:MembersExpenditureReport:Person:' + str(member_name)"
+      expense_date:
+        expr: "expense_date"
+
+  HospitalityExpenseClaimHasContractParty:
+    populated_from: HospitalityExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:HospitalityExpenseClaimHasContractParty:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      subject:
+        expr: "'gckg:Commons:HospitalityExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      predicate:
+        expr: "'CONTRACT_PARTY'"
+      object:
+        expr: "'gckg:Commons:MembersExpenditureReport:HospitalityExpenseClaim:Agent:' + str(supplier)"
+      expense_date:
+        expr: "expense_date"
+
+  TravelExpenseClaimHasPrincipalParty:
+    populated_from: TravelExpenditureRow
+    slot_derivations:
+      id:
+        expr: "'gckg:Commons:TravelExpenseClaimHasPrincipalParty:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      subject:
+        expr: "'gckg:Commons:TravelExpenseClaim:' + str(member_disclosure_uuid) + ':' + str(report_year) + ':' + str(report_quarter) + ':' + str(row_number)"
+      predicate:
+        expr: "'PRINCIPAL_PARTY'"
+      object:
+        expr: "'gckg:Commons:MembersExpenditureReport:Person:' + str(member_name)"
+      expense_date:
+        expr: "expense_date"
