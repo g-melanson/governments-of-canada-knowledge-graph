@@ -1,0 +1,145 @@
+id: https://w3id.org/gckg/foundation/slots
+name: gckg_foundation_slots
+title: GCKG shared slots
+description: Reusable slot definitions imported by domain modules.
+version: 0.1.0
+
+imports:
+  - linkml:types
+  - foundation/types
+
+default_prefix: gckg
+
+slots:
+  claim_id:
+    description: The ID of the claim.
+    range: string
+
+  description:
+    description: The description of the entity.
+    range: string
+
+  event_type:
+    description: The type of event.
+    range: string
+
+  expense_date:
+    description: The date of the expense.
+    range: string
+
+  id:
+    description: >-
+      A unique identifier for an entity structured as
+      a URI like gckg:<Target Class>:<Source, Optional>:<1-n Identifier Values>.
+    range: string
+  
+  name:
+    description: A singular common name for an entity.
+    range: string
+
+  labels:
+    description: Alternative names or labels for an entity.
+    range: string
+    multivalued: true
+  
+  total_attendees:
+    description: The total number of attendees to an event.
+    range: integer
+  
+  url:
+    description: A URL to an external webpage.
+    range: string
+
+########################################################
+# Monetary slots
+########################################################
+
+  accommodations:
+    description: The cost of accommodations.
+    range: decimal
+
+  meals_and_incidentals:
+    description: The cost of meals and incidentals.
+    range: decimal
+
+  total:
+    description: The total sum of money paid in compensation for services rendered.
+    range: decimal
+
+  transportation:
+    description: The cost of transportation.
+    range: decimal
+
+########################################################
+# Time-related slots
+########################################################
+
+  start_date:
+    description: A date indicating the start of an event or period of time.
+    range: datetime
+
+  end_date:
+    description: A date indicating the end of an event or period of time.
+    range: datetime
+
+  date_time:
+    description: The date and time of a document.
+    range: datetime
+
+########################################################
+# Textual content slots
+########################################################
+
+  text:
+    description: The full text content of a document element.
+    range: string
+
+########################################################
+# Legal document slots
+########################################################
+  
+  bill_origin:
+    description: The origin of a bill.
+    range: string
+
+  bill_type:
+    description: The type of a bill.
+    range: string
+
+  label:
+    description: A short identifying label for a document subdivision (e.g. "1", "(1)", "(a)").
+    range: string
+
+  long_title:
+    description: A long title for document-like entities.
+    range: string
+
+  marginal_note:
+    description: A marginal heading annotation for a legal section or subsection.
+    range: string
+
+  paragraph_label:
+    description: The label of a paragraph in a legal document.
+    range: string
+
+  section_label:
+    description: The label of a section in a legal document.
+    range: string
+
+  subparagraph_label:
+    description: The label of a subparagraph in a legal document.
+    range: string
+
+  subsection_label:
+    description: The label of a subsection in a legal document.
+    range: string
+
+
+########################################################
+# Validation Utilities Slots
+########################################################
+  entries:
+    multivalued: true
+    inlined_as_list: true
+    range: BaseEntity
+    

@@ -1,0 +1,221 @@
+id: https://w3id.org/gckg/domains/bylaw
+name: gckg_bylaw
+title: GCKG Bylaw representation domain
+description: Bylaw entities — sections, subsections, paragraphs, subparagraphs, defined terms.
+version: 0.1.0
+
+imports:
+  - ../foundation/prefixes
+  - linkml:types
+  - ../foundation/types
+  - ../foundation/slots
+
+default_prefix: gckg
+
+classes:
+
+  Act:
+    is_a: Document
+    slots:
+      - id
+      - name
+
+  ByLaw:
+    is_a: Document
+    slots:
+      - id
+      - name
+      - long_title
+      - bill_origin
+      - bill_type
+      - doc_date_time
+
+  ByLawSection:
+    is_a: Document
+    slots:
+      - id
+      - label
+      - marginal_note
+      - text
+    attributes:
+      heading_lv1:
+        range: string
+      heading_lv2:
+        range: string
+      heading_lv3:
+        range: string
+
+  ByLawSubsection:
+    is_a: Document
+    slots:
+      - id
+      - section_label
+      - label
+      - marginal_note
+      - text
+
+  ByLawParagraph:
+    is_a: Document
+    slots:
+      - id
+      - section_label
+      - subsection_label
+      - label
+      - text
+
+  ByLawSubParagraph:
+    is_a: Document
+    slots:
+      - id
+      - section_label
+      - subsection_label
+      - paragraph_label
+      - label
+      - text
+
+  ByLawDefinedTerm:
+    is_a: Entity
+    slots:
+      - id
+      - name
+      - text
+    attributes:
+      term_en:
+        range: string
+      term_fr:
+        range: string
+
+  ByLawExternalRef:
+    is_a: Entity
+    slots:
+      - id
+      - name
+    attributes:
+      reference_type:
+        range: string
+
+  # ── Containment relationships ─────────────────────────────────────────────
+
+  ByLawHasPartByLawSection:
+    is_a: Relationship
+    attributes:
+      subject:
+        range: ByLaw
+      predicate:
+        range: string
+        ifabsent: "HAS_PART"
+      object:
+        range: ByLawSection
+
+  ByLawSectionHasPartByLawSubsection:
+    is_a: Relationship
+    attributes:
+      subject:
+        range: ByLawSection
+      predicate:
+        range: string
+        ifabsent: "HAS_PART"
+      object:
+        range: ByLawSubsection
+
+  ByLawSectionHasPartByLawParagraph:
+    is_a: Relationship
+    description: >-
+      A Paragraph nested directly under a Section (no intervening Subsection).
+    attributes:
+      subject:
+        range: ByLawSection
+      predicate:
+        range: string
+        ifabsent: "HAS_PART"
+      object:
+        range: ByLawParagraph
+
+  ByLawSubsectionHasPartByLawParagraph:
+    is_a: Relationship
+    description: >-
+      A Paragraph nested under a Subsection.
+    attributes:
+      subject:
+        range: ByLawSubsection
+      predicate:
+        range: string
+        ifabsent: "HAS_PART"
+      object:
+        range: ByLawParagraph
+
+  ByLawParagraphHasPartByLawSubParagraph:
+    is_a: Relationship
+    description: >-
+      A SubParagraph nested under a Paragraph.
+    attributes:
+      subject:
+        range: ByLawParagraph
+      predicate:
+        range: string
+        ifabsent: "HAS_PART"
+      object:
+        range: ByLawSubParagraph
+
+  ByLawSubsectionHasPartByLawSubParagraph:
+    is_a: Relationship
+    description: >-
+      A SubParagraph nested directly under a Subsection (no intervening Paragraph).
+      Common for enumerated lists in definitions.
+    attributes:
+      subject:
+        range: ByLawSubsection
+      predicate:
+        range: string
+        ifabsent: "HAS_PART"
+      object:
+        range: ByLawSubParagraph
+
+  # ── Semantic relationships ────────────────────────────────────────────────
+
+  ByLawSectionDefinesDefinedTerm:
+    is_a: Relationship
+    attributes:
+      subject:
+        range: ByLawSection
+      predicate:
+        range: string
+        ifabsent: "DEFINES"
+      object:
+        range: ByLawDefinedTerm
+
+  ByLawSubsectionReferencesDefinedTerm:
+    is_a: Relationship
+    description: >-
+      A DefinitionRef inline in subsection body text, citing a defined term.
+      Distinct from ByLawSectionDefinesDefinedTerm (which is a definition declaration).
+    attributes:
+      subject:
+        range: ByLawSubsection
+      predicate:
+        range: string
+        ifabsent: "REFERENCES"
+      object:
+        range: ByLawDefinedTerm
+
+  ByLawSectionReferencesAct:
+    is_a: Relationship
+    attributes:
+      subject:
+        range: ByLawSection
+      predicate:
+        range: string
+        ifabsent: "REFERENCES"
+      object:
+        range: Act
+
+  DefinedTermReferencesDefinedTerm:
+    is_a: Relationship
+    attributes:
+      subject:
+        range: ByLawDefinedTerm
+      predicate:
+        range: string
+        ifabsent: "REFERENCES"
+      object:
+        range: ByLawDefinedTerm
