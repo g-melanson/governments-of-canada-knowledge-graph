@@ -1,0 +1,23 @@
+
+id: https://w3id.org/gckg/domains/business
+name: gckg_business
+title: GCKG Business-related domain
+description: Business-related entities — companies, employees, etc.
+version: 0.1.0
+
+imports:
+  - linkml:types
+  - ../foundation/prefixes
+  - ../foundation/slots
+  - ../foundation/types
+
+default_prefix: gckg
+
+classes:
+  Supplier:
+    is_a: Agent
+    slots:
+      - id
+      - name
+
+
