@@ -1,9 +1,11 @@
 # Execution plan — Stage 2 Validate (Bronze gate)
 
+> **Status (2026-07):** Milestone 2 is **done** for three Commons sources. See [`README.md`](README.md) for current status.
+
 **Stage 2** validates Stage 1 `records.jsonl` against **LinkML source schemas** (`source/*.schema.yaml`), writes **Bronze** (source-validated records), and routes failures to **quarantine** with a drift report.
 
-Pilot source: **`commons_members`** (small, HTTP-friendly, tests already exist).  
-Second source: **`open_canada_federal_election_contribution`** (proves large-file streaming validation).
+Pilot source (implemented): **`commons_members`**, **`commons_members_bylaw`**, **`commons_members_expenditures`**.  
+Deferred: **`open_canada_federal_election_contribution`** (large-file streaming validation).
 
 Implement files **top to bottom**. Each section: **what it does** → **exact code or schema**.
 
@@ -691,17 +693,14 @@ Validation streams line-by-line; memory stays bounded.
 
 ## 11. Done criteria
 
-- [ ] `source/commons_members.schema.yaml` passes `gen-yaml`
-- [ ] `validate/` package installable; `python -m validate list-sources` works
-- [ ] `python -m validate run --source commons_members --staging-run-id …` writes:
-  - `bronze/{source}/{run_id}/records.jsonl`
-  - `bronze/{source}/{run_id}/manifest.json`
-  - `quarantine/…/drift_report.json` (and `rejects.jsonl` if any rejects)
-- [ ] Valid staging rows → Bronze unchanged (byte-level JSON equality per record)
-- [ ] Invalid row (missing `person_id`) → quarantine with error detail
-- [ ] `pytest validate/tests` passes offline
-- [ ] Contributions validation completes on full staging run without OOM
-- [ ] README updated: Stage 2 section links to this plan
+- [x] `source/commons_members.schema.yaml` passes `gen-yaml`
+- [x] `validate/` package installable; `python -m validate list-sources` works
+- [x] `python -m validate run --source …` writes Bronze + manifest + quarantine
+- [x] Valid staging rows → Bronze unchanged (byte-level JSON equality per record)
+- [x] `pytest validate/tests` passes offline
+- [x] Source schemas for `commons_members_bylaw` and `commons_members_expenditures`
+- [ ] Contributions validation completes on full staging run without OOM — deferred
+- [x] README and milestone docs link to this plan
 
 ---
 
