@@ -1,4 +1,8 @@
-"""Abstract adapter protocol: parse, normalize, and filter source records."""
+"""
+Abstract adapter protocol: parse, normalize, and filter source records.
+Multi-class sources yield dicts with {"_row_class": "<LinkML class name>"}. 
+Normalize and validate use this key to select the class definition from the source schema.
+"""
 
 from __future__ import annotations
 

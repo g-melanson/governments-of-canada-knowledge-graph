@@ -58,7 +58,9 @@ def validate_records(
 
     for line_number, record in iter_staging_records(records_path):
         summary.input_record_count += 1
-        report = validator.validate(record, target_class=target_class)
+        record_class = record.get("_row_class", target_class)
+        payload = {k: v for k, v in record.items() if k != "_row_class"}
+        report = validator.validate(payload, target_class=record_class)
         errors = [
             {
                 "message": r.message,

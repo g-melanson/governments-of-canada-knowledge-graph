@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bill bill-origin="commons" bill-type="private-public" lang="en" date-time="2016-01-26 09:42:32">
+  <Identification>
+    <LongTitle>Members By-Law</LongTitle>
+    <RunningHead>Members By-law (Current as of October 2, 2025)</RunningHead>
+    <BillHistory>
+      <Stages stage="tabled">
+        <Date><YYYY>2024</YYYY></Date>
+      </Stages>
+    </BillHistory>
+  </Identification>
+  <Introduction>
+    <TableOfProvisions/>
+  </Introduction>
+  <Body>
+    <Heading level="1"><TitleText>General Provisions</TitleText></Heading>
+    <Section>
+      <Label>1</Label>
+      <MarginalNote>Interpretation</MarginalNote>
+      <Text>Section text.</Text>
+      <Subsection>
+        <Label>(1)</Label>
+        <Text>Subsection text.</Text>
+        <Definition>
+          <Text>
+            <DefinedTermEn>Board</DefinedTermEn> means the Board of Internal Economy.
+            See <DefinitionRef>former Member</DefinitionRef>.
+          </Text>
+        </Definition>
+        <Paragraph>
+          <Label>(a)</Label>
+          <Text>
+            Paragraph text citing
+            <XRefExternal reference-type="act">Canada Elections Act</XRefExternal>.
+          </Text>
+          <Subparagraph>
+            <Label>(i)</Label>
+            <Text>Subparagraph text.</Text>
+          </Subparagraph>
+        </Paragraph>
+      </Subsection>
+    </Section>
+  </Body>
+</Bill>

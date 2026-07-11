@@ -1,5 +1,12 @@
 commons_members:
-  map_path: transforms/commons_members_to_gckg.transform.yaml
+  map_path: transforms/schemas/commons_members_to_gckg.transform.yaml
+  map_mode: yaml
   source_class: CommonsMembersRow
-  source_schema: source/commons_members.schema.yaml
-  materializer: transforms.materializers.commons_members.get_materializer
+
+commons_members_bylaw:
+  map_path: transforms/schemas/commons_members_bylaw_to_gckg.transform.yaml
+  map_mode: yaml
+
+commons_members_expenditures:
+  map_path: transforms/schemas/commons_members_expenditures_to_gckg.transform.yaml
+  map_mode: yaml

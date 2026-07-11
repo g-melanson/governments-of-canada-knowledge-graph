@@ -23,32 +23,11 @@ class CommonsMembersAdapter(BaseAdapter):
 
     def parse(self, raw_path: Path) -> Iterator[dict]:
         for elem in iter_member_of_parliament(raw_path):
-            row: dict = {}
+            row: dict = {"_row_class": "CommonsMembersRow"}
             for child in elem:
                 xml_name = local_tag(child.tag)
                 if xml_name not in FIELD_MAP:
                     continue
                 row[FIELD_MAP[xml_name]] = child_text(elem, xml_name)
             yield row
-
-    def normalize(self, row: dict) -> dict:
-        out = {}
-        DATE_TIME_FIELDS = {"from_date_time", "to_date_time"}
         
-        for target_key in FIELD_MAP.values():
-            val = row.get(target_key)
-            
-            if target_key == "person_id" and val is not None:
-                out[target_key] = str(val).strip()
-                continue
-
-            if target_key in DATE_TIME_FIELDS:
-                out[target_key] = parse_iso_datetime(val)
-                continue
-
-            if isinstance(val, str):
-                out[target_key] = val.strip() or None
-            else:
-                out[target_key] = val
-
-        return out
