@@ -1,0 +1,12 @@
+commons_members:
+  map_path: sources/commons_members/commons_members_to_gckg.transform.yaml
+  map_mode: yaml
+  source_class: CommonsMembersRow
+
+commons_members_bylaw:
+  map_path: sources/commons_members_bylaw/commons_members_bylaw_to_gckg.transform.yaml
+  map_mode: yaml
+
+commons_members_expenditures:
+  map_path: sources/commons_members_expenditures/commons_members_expenditures_to_gckg.transform.yaml
+  map_mode: yaml
