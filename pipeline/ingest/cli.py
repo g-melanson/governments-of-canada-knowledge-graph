@@ -1,0 +1,83 @@
+"""Command-line interface for running ingest adapters and listing sources."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+from datetime import datetime, timezone
+from pathlib import Path
+
+from sources.registry import list_sources
+from pipeline.paths import UniversePaths
+from pipeline.ingest.config import get_source_config
+from pipeline.ingest.context import RunContext
+from pipeline.ingest.runner import run_ingest
+
+# Import adapters so @register runs
+import sources.commons_members.adapter  # noqa: F401
+import sources.commons_members_bylaw.adapter  # noqa: F401
+import sources.commons_members_expenditures.adapter  # noqa: F401
+
+def _default_run_id() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    parser = argparse.ArgumentParser(prog="ingest")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    run_p = sub.add_parser("run", help="Run one source adapter")
+    run_p.add_argument("--source", required=True)
+    run_p.add_argument("--run-id", default=_default_run_id())
+    run_p.add_argument(
+        "--universe-root",
+        type=Path,
+        default=Path("universe"),
+        help="Root of runtime output tree (see universe/README.md)",
+    )
+    run_p.add_argument(
+        "--fetch-policy",
+        choices=["default", "refresh", "cache-only", "local-file"],
+        default="default",
+    )
+    run_p.add_argument("--input", type=Path, help="Local raw file (local-file policy)")
+
+    sub.add_parser("list-sources", help="List registered adapters")
+
+    args = parser.parse_args()
+    if args.command == "list-sources":
+        for name in list_sources():
+            print(name)
+        return
+
+    fetch_policy = args.fetch_policy
+    input_path = args.input
+
+    # --input implies local-file; local_only sources default to their configured path.
+    if input_path is not None and fetch_policy == "default":
+        fetch_policy = "local-file"
+
+    if fetch_policy == "default":
+        source_cfg = get_source_config(args.source)
+        if source_cfg.get("local_only"):
+            fetch_policy = "local-file"
+            if input_path is None:
+                url = source_cfg.get("url", "")
+                if url.startswith("local://"):
+                    input_path = Path(url.removeprefix("local://"))
+
+    ctx = RunContext(
+        source=args.source,
+        run_id=args.run_id,
+        paths=UniversePaths(root=args.universe_root),
+        fetch_policy=fetch_policy,
+        input_path=input_path,
+    )
+    manifest = run_ingest(ctx)
+    print(json.dumps(manifest["output"], indent=2))
+
+
+if __name__ == "__main__":
+    main()

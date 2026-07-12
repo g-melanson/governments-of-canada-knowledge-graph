@@ -1,0 +1,12 @@
+
+commons_members:
+  schema_path: sources/commons_members/commons_members.schema.yaml
+  target_class: CommonsMembersRow
+
+commons_members_bylaw:
+  schema_path: sources/commons_members_bylaw/commons_members_bylaw.schema.yaml
+  target_class: ByLawDocumentRow
+
+commons_members_expenditures:
+  schema_path: sources/commons_members_expenditures/commons_members_expenditures.schema.yaml
+  target_class: ExpenseReportRow
