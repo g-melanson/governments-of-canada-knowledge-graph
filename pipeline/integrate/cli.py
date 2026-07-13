@@ -18,13 +18,16 @@ def _default_run_id() -> str:
 
 
 def _parse_input(token: str) -> SilverInput:
-    # Format: source:silver_run_id  (e.g. commons_members:2026-06-24T172758Z)
-    source, _, run_id = token.partition(":")
-    if not source or not run_id:
-        raise argparse.ArgumentTypeError(
-            f"--input must be 'source:silver_run_id', got: {token!r}"
-        )
-    return SilverInput(source=source, silver_run_id=run_id)
+    if ":" in token:
+        source, _, silver_run_id = token.partition(":")
+        if not source:
+            raise argparse.ArgumentTypeError(
+                f"--input must be 'source' or 'source:silver_run_id', got: {token!r}"
+            )
+        return SilverInput(source=source, silver_run_id=silver_run_id or None)
+    if not token:
+        raise argparse.ArgumentTypeError(f"--input must be a source name, got: {token!r}")
+    return SilverInput(source=token)
 
 
 def main() -> None:
@@ -32,21 +35,24 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="integrate")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    run_p = sub.add_parser("run", help="Merge Silver fragments → universe/4-merged/")
+    run_p = sub.add_parser("run", help="Merge Silver fragments → universe/{run_id}/4-merged/")
     run_p.add_argument(
-        "--input", action="append", required=True, type=_parse_input,
-        metavar="SOURCE:SILVER_RUN_ID",
-        help="A Silver run to merge; repeatable.",
+        "--input",
+        action="append",
+        required=True,
+        type=_parse_input,
+        metavar="SOURCE[:SILVER_RUN_ID]",
+        help="Silver source to merge; repeatable. Defaults silver run to --run-id.",
     )
     run_p.add_argument("--run-id", default=_default_run_id())
     run_p.add_argument(
         "--universe-root",
         type=Path,
         default=Path("universe"),
-        help="Root of runtime output tree (see universe/README.md)",
+        help="Root of runtime output tree (see pipeline/README.md)",
     )
     run_p.add_argument(
-        "--resolver", default="integrate.resolvers.identity.get_resolver",
+        "--resolver", default="pipeline.integrate.resolvers.identity.get_resolver",
         help="Dotted path to an EntityResolver factory.",
     )
     run_p.add_argument(

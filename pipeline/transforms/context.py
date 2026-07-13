@@ -10,12 +10,16 @@ from pipeline.paths import UniversePaths
 class TransformContext:
     source: str
     run_id: str
-    bronze_run_id: str
+    bronze_run_id: str | None = None
     paths: UniversePaths = field(default_factory=UniversePaths)
 
     @property
+    def effective_bronze_run_id(self) -> str:
+        return self.bronze_run_id or self.run_id
+
+    @property
     def bronze_dir(self) -> Path:
-        return self.paths.bronze_run_dir(self.source, self.bronze_run_id)
+        return self.paths.bronze_run_dir(self.source, self.effective_bronze_run_id)
 
     @property
     def silver_dir(self) -> Path:
@@ -23,11 +27,11 @@ class TransformContext:
 
     @property
     def bronze_manifest_path(self) -> Path:
-        return self.paths.bronze_manifest(self.source, self.bronze_run_id)
+        return self.paths.bronze_manifest(self.source, self.effective_bronze_run_id)
 
     @property
     def bronze_records_path(self) -> Path:
-        return self.paths.bronze_records(self.source, self.bronze_run_id)
+        return self.paths.bronze_records(self.source, self.effective_bronze_run_id)
 
     @property
     def silver_fragments_path(self) -> Path:

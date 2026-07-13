@@ -21,13 +21,13 @@ def main() -> None:
 
     run_p = sub.add_parser("run", help="Transform Bronze records → Silver")
     run_p.add_argument("--source", required=True)
-    run_p.add_argument("--bronze-run-id", required=True)
+    run_p.add_argument("--bronze-run-id", default=None, help="Bronze run id (defaults to --run-id)")
     run_p.add_argument("--run-id", default=_default_run_id())
     run_p.add_argument(
         "--universe-root",
         type=Path,
         default=Path("universe"),
-        help="Root of runtime output tree (see universe/README.md)",
+        help="Root of runtime output tree (see pipeline/README.md)",
     )
 
     args = parser.parse_args()

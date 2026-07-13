@@ -85,7 +85,7 @@ def write_staging(
     *,
     manifest: dict[str, Any] | None = None,
 ) -> Path:
-    """Create universe/1-staging/{source}/{staging_run_id}/records.jsonl + manifest.json."""
+    """Create universe/{run_id}/1-staging/{source}/records.jsonl + manifest.json."""
     run_dir = paths.staging_run_dir(source, staging_run_id)
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "records.jsonl").write_text(records_jsonl, encoding="utf-8")

@@ -73,6 +73,8 @@ def _load_crosswalk(ctx: IntegrateContext) -> PersonCrosswalk:
         discovered_members, discovered_expenditures = discover_bronze_records(
             ctx.sorted_inputs(),
             paths=ctx.paths,
+            run_id=ctx.run_id,
+            silver_run_id_for=ctx.silver_run_id_for,
         )
         members_bronze = members_bronze or discovered_members
         expenditures_bronze = expenditures_bronze or discovered_expenditures

@@ -21,7 +21,7 @@ node_modules/
 .build/
 generated/
 
-# Pipeline runtime output (see universe/README.md)
+# Pipeline runtime output (see pipeline/README.md)
 universe/
 
 # Legacy tier roots (remove once migration is complete)

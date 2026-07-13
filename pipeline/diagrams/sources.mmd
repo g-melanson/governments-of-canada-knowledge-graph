@@ -1,0 +1,38 @@
+flowchart TB
+  GY["gen-yaml · compile · lint"]
+  DM["schemas/schema.yaml"]
+  GY -.-> DM
+
+  subgraph commons [Commons — implemented]
+    direction LR
+    S1[commons_members]
+    S2[commons_members_bylaw]
+    S3[commons_members_expenditures]
+    A1[sources/*/adapter.py]
+    SM[sources/*/*.schema.yaml]
+    T[sources/*/*_to_gckg.transform.yaml]
+  end
+
+  V1["Validate · source schema"]
+  BR[("universe/2-bronze")]
+  SLV[("universe/3-silver")]
+  MR["Integrate"]
+  V3["Publish · domain schema"]
+  GLD[("universe/5-gold")]
+
+  S1 & S2 & S3 --> A1 --> V1
+  V1 -->|pass| BR
+  SM -.->|schema| V1
+  BR --> T --> SLV
+  SLV --> MR --> V3 --> GLD
+  DM -.->|schema| V3
+
+  classDef bronze fill:#cd7f32,color:#fff,stroke:#8B4513
+  classDef silver fill:#c0c0c0,color:#1a1a1a,stroke:#808080
+  classDef gold fill:#ffd700,color:#1a1a1a,stroke:#b8860b
+  classDef gate fill:#2b6cb0,color:#fff,stroke:#1a4480
+
+  class BR bronze
+  class SLV silver
+  class GLD gold
+  class V1,V3 gate

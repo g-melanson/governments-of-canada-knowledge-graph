@@ -26,15 +26,15 @@ def main() -> None:
     run_p.add_argument("--source", required=True)
     run_p.add_argument(
         "--staging-run-id",
-        required=True,
-        help="Stage 1 run_id under universe/1-staging/",
+        default=None,
+        help="Staging run id (defaults to --run-id)",
     )
     run_p.add_argument("--run-id", default=_default_run_id())
     run_p.add_argument(
         "--universe-root",
         type=Path,
         default=Path("universe"),
-        help="Root of runtime output tree (see universe/README.md)",
+        help="Root of runtime output tree (see pipeline/README.md)",
     )
     run_p.add_argument(
         "--fail-fast",

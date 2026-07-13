@@ -205,17 +205,20 @@ def discover_bronze_records(
     inputs: tuple,
     *,
     paths: UniversePaths,
+    run_id: str,
+    silver_run_id_for,
 ) -> tuple[Path | None, Path | None]:
     """Resolve members/expenditures Bronze paths from Silver run manifests."""
     members_path: Path | None = None
     expenditures_path: Path | None = None
 
-    for inp in sorted(inputs, key=lambda i: (i.source, i.silver_run_id)):
-        manifest_path = paths.silver_manifest(inp.source, inp.silver_run_id)
+    for inp in sorted(inputs, key=lambda i: (i.source, silver_run_id_for(i))):
+        silver_run_id = silver_run_id_for(inp)
+        manifest_path = paths.silver_manifest(inp.source, silver_run_id)
         if not manifest_path.exists():
             continue
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        bronze_run_id = manifest.get("bronze_run_id")
+        bronze_run_id = manifest.get("bronze_run_id") or silver_run_id or run_id
         if not bronze_run_id and manifest.get("inputs"):
             bronze_run_id = manifest["inputs"][0].get("bronze_run_id")
         if not bronze_run_id:

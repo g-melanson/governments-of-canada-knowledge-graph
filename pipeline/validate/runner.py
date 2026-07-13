@@ -60,7 +60,7 @@ def run_validate(ctx: ValidateContext) -> dict:
     drift_report = {
         "run_id": ctx.run_id,
         "source": ctx.source,
-        "staging_run_id": ctx.staging_run_id,
+        "staging_run_id": ctx.effective_staging_run_id,
         "started_at": started_at.isoformat(),
         "finished_at": finished_at.isoformat(),
         "schema_path": str(schema_cfg["schema_path"].relative_to(schema_cfg["schema_path"].parents[2])
@@ -84,7 +84,7 @@ def run_validate(ctx: ValidateContext) -> dict:
         "status": "success",
         "inputs": [
             {
-                "staging_run_id": ctx.staging_run_id,
+                "staging_run_id": ctx.effective_staging_run_id,
                 "staging_manifest": json.loads(ctx.staging_manifest_path.read_text(encoding="utf-8")),
             }
         ],
