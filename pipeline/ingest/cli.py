@@ -35,7 +35,7 @@ def main() -> None:
         "--universe-root",
         type=Path,
         default=Path("universe"),
-        help="Root of runtime output tree (see universe/README.md)",
+        help="Root of runtime output tree (see pipeline/README.md)",
     )
     run_p.add_argument(
         "--fetch-policy",

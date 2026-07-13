@@ -12,21 +12,25 @@ from pipeline.paths import UniversePaths
 class ValidateContext:
     source: str
     run_id: str
-    staging_run_id: str
+    staging_run_id: str | None = None
     paths: UniversePaths = field(default_factory=UniversePaths)
     fail_fast: bool = False
 
     @property
+    def effective_staging_run_id(self) -> str:
+        return self.staging_run_id or self.run_id
+
+    @property
     def staging_run_dir(self) -> Path:
-        return self.paths.staging_run_dir(self.source, self.staging_run_id)
+        return self.paths.staging_run_dir(self.source, self.effective_staging_run_id)
 
     @property
     def staging_records_path(self) -> Path:
-        return self.paths.staging_records(self.source, self.staging_run_id)
+        return self.paths.staging_records(self.source, self.effective_staging_run_id)
 
     @property
     def staging_manifest_path(self) -> Path:
-        return self.paths.staging_manifest(self.source, self.staging_run_id)
+        return self.paths.staging_manifest(self.source, self.effective_staging_run_id)
 
     @property
     def bronze_run_dir(self) -> Path:

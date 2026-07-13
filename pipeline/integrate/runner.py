@@ -57,22 +57,23 @@ def run_integrate(ctx: IntegrateContext) -> dict:
 
     for inp in ctx.sorted_inputs():
         path = ctx.fragments_path(inp)
+        silver_run_id = ctx.silver_run_id_for(inp)
         for line_number, fragment in iter_fragments(path):
             acc.summary.input_fragment_count += 1
             try:
                 if is_edge(fragment):
                     acc.summary.input_edge_count += 1
-                    acc.add_edge(fragment, inp.source, inp.silver_run_id)
+                    acc.add_edge(fragment, inp.source, silver_run_id)
                 elif fragment.get("id"):
                     acc.summary.input_node_count += 1
-                    acc.add_node(fragment, inp.source, inp.silver_run_id)
+                    acc.add_node(fragment, inp.source, silver_run_id)
                 else:
                     raise FragmentShapeError("unclassifiable or null-id fragment")
             except MergeConflictError as e:
                 acc.summary.conflicts += 1
                 entry = _quarantine_entry(
                     source=inp.source,
-                    silver_run_id=inp.silver_run_id,
+                    silver_run_id=silver_run_id,
                     line=line_number,
                     fragment=fragment,
                     reason="type_conflict",
@@ -85,7 +86,7 @@ def run_integrate(ctx: IntegrateContext) -> dict:
                 quarantine.append(
                     _quarantine_entry(
                         source=inp.source,
-                        silver_run_id=inp.silver_run_id,
+                        silver_run_id=silver_run_id,
                         line=line_number,
                         fragment=fragment,
                         reason="fragment_shape",
@@ -197,7 +198,7 @@ def _build_manifest(ctx, acc, started_at, finished_at, quarantine_count, conflic
         "inputs": [
             {
                 "source": i.source,
-                "silver_run_id": i.silver_run_id,
+                "silver_run_id": ctx.silver_run_id_for(i),
                 "fragments_path": str(ctx.fragments_path(i)),
             }
             for i in ctx.sorted_inputs()

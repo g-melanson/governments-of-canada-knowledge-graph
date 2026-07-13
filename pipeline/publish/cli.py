@@ -20,19 +20,21 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", required=True)
 
     run_p = sub.add_parser("run", help="Validate merged Silver → Gold")
-    run_p.add_argument("--merged-run-id", required=True)
-    run_p.add_argument("--run-id", default=_default_run_id())
+    run_p.add_argument(
+        "--run-id",
+        default=_default_run_id(),
+        help="Pipeline run id (reads merged + writes gold under universe/{run_id}/)",
+    )
     run_p.add_argument(
         "--universe-root",
         type=Path,
         default=Path("universe"),
-        help="Root of runtime output tree (see universe/README.md)",
+        help="Root of runtime output tree (see pipeline/README.md)",
     )
 
     args = parser.parse_args()
     ctx = PublishContext(
         run_id=args.run_id,
-        merged_run_id=args.merged_run_id,
         paths=UniversePaths(root=args.universe_root),
     )
     manifest = run_publisher(ctx)

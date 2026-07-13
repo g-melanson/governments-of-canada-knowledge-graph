@@ -45,7 +45,7 @@ def _build_engine(map_cfg: dict, ctx: TransformContext):
         def bronze_reference_factory(line_number: int) -> dict:
             return {
                 "source": ctx.source,
-                "bronze_run_id": ctx.bronze_run_id,
+                "bronze_run_id": ctx.effective_bronze_run_id,
                 "line_number": line_number,
             }
 
@@ -113,7 +113,7 @@ def run_transform(ctx: TransformContext) -> dict:
     map_mode = map_cfg.get("map_mode", "materializer")
     silver_manifest = {
         "run_id": ctx.run_id,
-        "bronze_run_id": ctx.bronze_run_id,
+        "bronze_run_id": ctx.effective_bronze_run_id,
         "source": ctx.source,
         "stage": "transform",
         "tier": "silver",
@@ -125,7 +125,7 @@ def run_transform(ctx: TransformContext) -> dict:
         "status": "success",
         "inputs": [
             {
-                "bronze_run_id": ctx.bronze_run_id,
+                "bronze_run_id": ctx.effective_bronze_run_id,
                 "bronze_manifest_path": str(ctx.bronze_manifest_path),
             }
         ],
