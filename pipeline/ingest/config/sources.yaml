@@ -1,19 +1,19 @@
 
-commons_members:
+commons.members:
   url: https://www.ourcommons.ca/members/en/search/xml
   ttl_seconds: 21600
   rate_limit_seconds: 1.0
   format: xml
-  raw_filename: members.xml
+  raw_filename: commons_members.xml
 
-commons_members_bylaw:
+commons.members_bylaw:
   url: "https://www.ourcommons.ca/Content/ByLaws/10000/10000_34/10000_E.xml"
   ttl_seconds: 200
   format: xml
   raw_filename: commons_members_bylaw.xml
 
-commons_members_expenditures:
+commons.members_expenditures:
   local_only: true
   url: "local://data/expense_claims.pkl"   
   format: dict                              
-  raw_filename: expense_claims.pkl
+  raw_filename: commons_expense_claims.pkl

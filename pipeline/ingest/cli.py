@@ -14,48 +14,53 @@ from pipeline.ingest.config import get_source_config
 from pipeline.ingest.context import RunContext
 from pipeline.ingest.runner import run_ingest
 
-# Import adapters so @register runs
-import sources.commons_members.adapter  # noqa: F401
-import sources.commons_members_bylaw.adapter  # noqa: F401
-import sources.commons_members_expenditures.adapter  # noqa: F401
 
 def _default_run_id() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
 
 
-def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
-    parser = argparse.ArgumentParser(prog="ingest")
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="python -m pipeline.ingest.cli",
+        description="Run GCKG source ingestion"
+    )
     sub = parser.add_subparsers(dest="command", required=True)
+    sub_parser = sub.add_parser("run", help="run source adapter")
+    sub.add_parser("list-sources", help="list registered adapters")
 
-    run_p = sub.add_parser("run", help="Run one source adapter")
-    run_p.add_argument("--source", required=True)
-    run_p.add_argument("--run-id", default=_default_run_id())
-    run_p.add_argument(
+    sub_parser.add_argument("--source", required=True, help="source name")
+    sub_parser.add_argument("--run-id", default=_default_run_id())
+    sub_parser.add_argument("--input", type=Path, help="Local raw file (local-file policy)")
+    sub_parser.add_argument(
         "--universe-root",
         type=Path,
         default=Path("universe"),
         help="Root of runtime output tree (see pipeline/README.md)",
     )
-    run_p.add_argument(
+    sub_parser.add_argument(
         "--fetch-policy",
         choices=["default", "refresh", "cache-only", "local-file"],
         default="default",
     )
-    run_p.add_argument("--input", type=Path, help="Local raw file (local-file policy)")
 
-    sub.add_parser("list-sources", help="List registered adapters")
+    return parser
 
-    args = parser.parse_args()
+
+def main(argv: list[str] | None = None) -> None:
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+ 
+    args = build_parser().parse_args(argv)
+
     if args.command == "list-sources":
         for name in list_sources():
             print(name)
         return
 
+    
+
     fetch_policy = args.fetch_policy
     input_path = args.input
 
-    # --input implies local-file; local_only sources default to their configured path.
     if input_path is not None and fetch_policy == "default":
         fetch_policy = "local-file"
 

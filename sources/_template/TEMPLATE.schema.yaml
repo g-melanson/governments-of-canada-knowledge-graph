@@ -1,0 +1,47 @@
+id: https://w3id.org/gckg/source/TEMPLATE
+name: TEMPLATE_source
+title: TEMPLATE — staged row shape
+description: Source schema for Stage 1 JSONL from the publisher feed.
+version: 0.1.0
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  gckg: https://w3id.org/gckg/TEMPLATE/
+
+default_prefix: gckg
+
+imports:
+  - linkml:types
+
+classes:
+  # Single-class source: keep one class. Multi-class: add more classes;
+  # every emitted row must set "_row_class" to one of these names.
+  TEMPLATERow:
+    description: One normalized row from the publisher feed.
+    attributes:
+      publisher_record_id:
+        description: Stable id from the publisher, if any.
+        range: string
+        required: true
+        annotations:
+          # Map publisher column/element name → this slot. Adapter reads this
+          # via publisher_field_map() — do not hardcode names in parse logic.
+          gckg:publisher_header: "PublisherRecordId"
+
+      example_text_field:
+        description: Publisher string field; kept as-is in Bronze.
+        range: string
+        annotations:
+          gckg:publisher_header: "ExampleTextField"
+
+      example_derived_datetime:
+        description: Value computed in parse(), not read from a publisher column.
+        range: datetime
+        annotations:
+          gckg:adapter_note: Derived in adapter.parse(); not a publisher header
+
+      row_number:
+        description: Zero-based position when the publisher provides no unique key.
+        range: integer
+        annotations:
+          gckg:adapter_note: Minted in parse() from enumerate()

@@ -6,7 +6,9 @@ from pipeline.ingest.errors import UnknownSourceError
 from sources.base import BaseAdapter
 
 _REGISTRY: dict[str, Type[BaseAdapter]] = {}
-
+_ADAPTER_DOMAINS = (
+    "sources.commons",
+)
 
 def register(cls: Type[BaseAdapter]) -> Type[BaseAdapter]:
     if not cls.source:
@@ -24,3 +26,15 @@ def get_adapter(source: str) -> BaseAdapter:
 
 def list_sources() -> list[str]:
     return sorted(_REGISTRY)
+
+
+def _load_adapters() -> None:
+    import importlib
+    for domain in _ADAPTER_DOMAINS:
+        importlib.import_module(domain)
+
+def _split(source: str) -> tuple[str, str]:
+    domain, resource = source.split(".", 1)
+    return domain, resource
+
+_load_adapters()

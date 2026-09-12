@@ -6,7 +6,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from sources.registry import get_adapter
+from sources.registry import get_adapter, _load_adapters
 from pipeline.ingest.config import get_source_config
 from pipeline.ingest.context import RunContext
 from pipeline.ingest.errors import EmptySourceError
@@ -17,8 +17,13 @@ from pipeline.ingest.utils import staging_json_default
 log = logging.getLogger(__name__)
 
 
+def build_adapter(source: str):
+    _load_adapters()
+    return get_adapter(source)
+
+
 def run_ingest(ctx: RunContext) -> dict:
-    adapter = get_adapter(ctx.source)
+    adapter = build_adapter(ctx.source)
     source_cfg = get_source_config(ctx.source)
     normalizer = SchemaNormalizer(ctx.schema_path)
 

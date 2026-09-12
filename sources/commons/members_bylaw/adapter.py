@@ -12,7 +12,7 @@ from sources.registry import register
 from pipeline.ingest.schema import load_source_schema, normalized_fields
 from pipeline.ingest.utils import parse_iso_datetime
 
-_SCHEMA = load_source_schema("commons_members_bylaw")
+_SCHEMA = load_source_schema("commons.members_bylaw")
 _ROW_CLASSES = tuple(_SCHEMA["classes"].keys())
 NORMALIZED_FIELDS = {
     cls: normalized_fields(_SCHEMA, target_class=cls) for cls in _ROW_CLASSES
@@ -22,7 +22,7 @@ DATE_TIME_FIELDS = {"date_time"}
 
 @register
 class CommonsMembersBylawAdapter(BaseAdapter):
-    source = "commons_members_bylaw"
+    source = "commons.members_bylaw"
 
     def parse(self, raw_path: Path) -> Iterator[dict]:
         root = ET.parse(raw_path).getroot()
