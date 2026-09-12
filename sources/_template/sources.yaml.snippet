@@ -1,0 +1,8 @@
+# Append to pipeline/ingest/config/sources.yaml
+
+TEMPLATE:
+  url: https://example.com/publisher/feed.xml   # or local://data/file.pkl
+  ttl_seconds: 21600                          # cache freshness for HTTP sources
+  format: xml                                 # xml | csv | dict (informational)
+  raw_filename: source.xml                      # snapshot name under raw/
+  # local_only: true                            # uncomment when URLs are dead / offline-only

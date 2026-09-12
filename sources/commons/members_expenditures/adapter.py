@@ -15,7 +15,7 @@ from pipeline.ingest.schema import load_source_schema, normalized_fields, publis
 
 log = logging.getLogger(__name__)
 
-_SCHEMA = load_source_schema("commons_members_expenditures")
+_SCHEMA = load_source_schema("commons.members_expenditures")
 _ROW_CLASSES = tuple(_SCHEMA["classes"].keys())
 NORMALIZED_FIELDS = {
     cls: normalized_fields(_SCHEMA, target_class=cls) for cls in _ROW_CLASSES
@@ -70,7 +70,7 @@ def _mapped(rec: dict[str, str], row_class: str) -> dict:
 
 @register
 class CommonsMembersExpendituresAdapter(BaseAdapter):
-    source = "commons_members_expenditures"
+    source = "commons.members_expenditures"
 
     def parse(self, raw_path: Path) -> Iterator[dict]:
         with raw_path.open("rb") as fh:

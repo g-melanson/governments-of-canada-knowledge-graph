@@ -1,0 +1,13 @@
+# Stage 3 transform map (not used by ingest). Fill in when Bronze rows are validated
+# and you are ready to emit GCKG domain fragments.
+id: https://w3id.org/gckg/transforms/TEMPLATE_to_gckg
+name: TEMPLATE_to_gckg
+title: TEMPLATE Bronze → GCKG domain
+
+class_derivations:
+  # Example:
+  # SomeDomainClass:
+  #   populated_from: TEMPLATERow
+  #   slot_derivations:
+  #     id:
+  #       expr: "'gckg:SomeDomainClass:' + str(publisher_record_id)"

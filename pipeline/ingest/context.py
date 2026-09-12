@@ -41,8 +41,9 @@ class RunContext:
 
     @property
     def source_dir(self) -> Path:
-        return REPO_ROOT / "sources" / self.source
+        domain, resource = self.source.split(".", 1)
+        return REPO_ROOT / "sources" / domain / resource
 
     @property
     def schema_path(self) -> Path:
-        return self.source_dir / f"{self.source}.schema.yaml"
+        return self.source_dir / "schema.yaml"
