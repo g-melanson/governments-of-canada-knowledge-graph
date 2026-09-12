@@ -5,38 +5,47 @@ from typing import Any
 
 from linkml_runtime.utils.schemaview import SchemaView
 
-PUBLISHER_HEADER_TAG = "gckg:publisher_header"
+from datetime import datetime, timezone
+from dateutil import parser
+from typing import Type, TypeVar, Any
 
-def _coerce_datetime(val) -> datetime | None:
+T = TypeVar("T", datetime, float, int, str)
+
+def coerce(val: Any, target_type: Type[T]) -> T | None:
     if val is None:
         return None
-    if isinstance(val, datetime):
-        return val if val.tzinfo else val.replace(tzinfo=timezone.utc)
-    text = str(val).strip()
-    if not text:
-        return None
-    for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y/%m/%d"):  # ISO first, then expenditures
-        try:
-            return datetime.strptime(text, fmt).replace(tzinfo=timezone.utc)
-        except ValueError:
-            continue
-    raise ValueError(f"unparseable datetime: {text!r}")
 
-def _coerce_float(val) -> float | None:
-    if val is None:
-        return None
-    if isinstance(val, (int, float)):
-        return float(val)
-    text = str(val).strip().replace(",", "")
-    return float(text) if text else None
+    if target_type is datetime:
+        if isinstance(val, datetime):
+            return val if val.tzinfo else val.replace(tzinfo=timezone.utc)
+        text = str(val).strip()
+        if not text:
+            return None
+        for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y/%m/%d"):  # ISO first, then expenditures
+            try:
+                return datetime.strptime(text, fmt).replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+        raise ValueError(f"unparseable datetime: {text!r}")
 
-def _coerce_int(val) -> int | None:
-    if val is None:
-        return None
-    if isinstance(val, int):
-        return val
-    text = str(val).strip()
-    return int(text) if text else None
+    if target_type is float:
+        if isinstance(val, (int, float)):
+            return float(val)
+        text = str(val).strip().replace(",", "")
+        return float(text) if text else None
+
+    if target_type is int:
+        if isinstance(val, int):
+            return val
+        text = str(val).strip()
+        return int(text) if text else None
+
+    if target_type is str:
+        text = str(val).strip()
+        return text or None
+
+    raise TypeError(f"unsupported target type: {target_type!r}")
+
 
 class SchemaNormalizer:
     def __init__(self, schema_path: str):
@@ -55,13 +64,13 @@ class SchemaNormalizer:
         for slot_name, slot_range in self._ranges(row_class).items():
             val = row.get(slot_name)
             if slot_range == "string":
-                out[slot_name] = val.strip() or None if isinstance(val, str) else val
+                out[slot_name] = coerce(val, str)
             elif slot_range == "integer":
-                out[slot_name] = _coerce_int(val)
+                out[slot_name] = coerce(val, int)
             elif slot_range == "float":
-                out[slot_name] = _coerce_float(val)
+                out[slot_name] = coerce(val, float)
             elif slot_range == "datetime":
-                out[slot_name] = _coerce_datetime(val)
+                out[slot_name] = coerce(val, datetime)
         return out
 
     @staticmethod
@@ -73,5 +82,3 @@ class SchemaNormalizer:
             slot_name: schema.induced_slot(slot_name, class_name).range
             for slot_name in schema.class_slots(class_name)
         }
-
-
