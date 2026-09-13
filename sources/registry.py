@@ -33,8 +33,5 @@ def _load_adapters() -> None:
     for domain in _ADAPTER_DOMAINS:
         importlib.import_module(domain)
 
-def _split(source: str) -> tuple[str, str]:
-    domain, resource = source.split(".", 1)
-    return domain, resource
 
 _load_adapters()
