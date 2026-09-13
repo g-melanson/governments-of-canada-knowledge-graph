@@ -17,16 +17,18 @@ def coerce(val: Any, target_type: Type[T]) -> T | None:
 
     if target_type is datetime:
         if isinstance(val, datetime):
-            return val if val.tzinfo else val.replace(tzinfo=timezone.utc)
+            return val if val.tzinfo else val.replace(tzinfo=timezone.utc)  # type: ignore
+
         text = str(val).strip()
         if not text:
-            return None
-        for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y/%m/%d"):  # ISO first, then expenditures
-            try:
-                return datetime.strptime(text, fmt).replace(tzinfo=timezone.utc)
-            except ValueError:
-                continue
-        raise ValueError(f"unparseable datetime: {text!r}")
+            return None  
+
+        normalized = text.replace("/", "-")
+        try:
+            dt = datetime.fromisoformat(normalized)
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)  # type: ignore
+        except ValueError:
+            raise ValueError(f"unparseable datetime: {text!r}")
 
     if target_type is float:
         if isinstance(val, (int, float)):

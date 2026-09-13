@@ -33,7 +33,6 @@ def run_ingest(ctx: RunContext) -> dict:
     raw_path, input_meta = fetch_raw(ctx, source_cfg)
 
     record_count = 0
-    rejected_count = 0
     with ctx.records_path.open("w", encoding="utf-8") as fout:
         for raw_row in adapter.parse(raw_path):
             row = normalizer.normalize(raw_row["_row_class"], raw_row)
@@ -54,7 +53,6 @@ def run_ingest(ctx: RunContext) -> dict:
         "output": {
             "records_path": "records.jsonl",
             "record_count": record_count,
-            "rejected_count": rejected_count,
         },
     }
     ctx.manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -64,7 +62,6 @@ def run_ingest(ctx: RunContext) -> dict:
             "source": ctx.source,
             "run_id": ctx.run_id,
             "record_count": record_count,
-            "rejected_count": rejected_count,
         },
     )
     return manifest
