@@ -4,13 +4,18 @@ from __future__ import annotations
 
 import json
 import logging
+from pathlib import Path
 from datetime import datetime, timezone
+from dataclasses import dataclass
+from typing import Iterator, Any
+
+from linkml.validator import Validator
+from linkml.validator.plugins import JsonschemaValidationPlugin
 
 from pipeline.validate.config import get_schema_config
 from pipeline.validate.context import ValidateContext
-from pipeline.validate.engine import validate_records
+from pipeline.validate.engine import validate_record
 from pipeline.validate.errors import (
-    EmptyBronzeError, 
     StagingInputError, 
     ValidationFailedError
     )
@@ -18,36 +23,59 @@ from pipeline.validate.errors import (
 log = logging.getLogger(__name__)
 
 
+@dataclass
+class ValidationSummary:
+    input_record_count: int = 0
+    accepted_count: int = 0
+    rejected_count: int = 0
+
+
+def iter_staging_records(path: Path) -> Iterator[tuple[int, dict[str, Any]]]:
+    if not path.exists():
+        raise StagingInputError(f"Staging records not found: {path}")
+    with path.open(encoding="utf-8") as fin:
+        for line_number, line in enumerate(fin, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            yield json.loads(line)
+
+
 def run_validate(ctx: ValidateContext) -> dict:
     schema_cfg = get_schema_config(ctx.source)
     if not ctx.staging_manifest_path.exists():
         raise StagingInputError(f"Staging manifest not found: {ctx.staging_manifest_path}")
 
-    staging_manifest = json.loads(ctx.staging_manifest_path.read_text(encoding="utf-8"))
+    validator = Validator(
+        str(schema_cfg["schema_path"]),
+        validation_plugins=[JsonschemaValidationPlugin(closed=True)],
+    )
+    summary = ValidationSummary()
+
     ctx.bronze_run_dir.mkdir(parents=True, exist_ok=True)
     ctx.quarantine_run_dir.mkdir(parents=True, exist_ok=True)
 
     started_at = datetime.now(timezone.utc)
-    outcomes, summary = validate_records(
-        ctx.staging_records_path,
-        schema_cfg["schema_path"],
-        schema_cfg["target_class"],
-        fail_fast=ctx.fail_fast,
-    )
-
-    if summary.accepted_count == 0:
-        raise EmptyBronzeError(f"{ctx.source}: all records rejected")
 
     with ctx.bronze_records_path.open("w", encoding="utf-8") as bout:
         with ctx.rejects_path.open("w", encoding="utf-8") as qout:
-            for outcome in outcomes:
+
+            for record in iter_staging_records(ctx.staging_records_path):
+                summary.input_record_count += 1
+                outcome = validate_record(
+                    record=record,
+                    target_class=schema_cfg["target_class"],
+                    validator=validator
+                )
+
                 if outcome.accepted:
+                    summary.accepted_count += 1
                     bout.write(json.dumps(outcome.record, ensure_ascii=False) + "\n")
                 else:
+                    summary.rejected_count += 1
                     qout.write(
                         json.dumps(
                             {
-                                "line": outcome.line_number,
                                 "record": outcome.record,
                                 "errors": outcome.errors,
                             },
@@ -57,6 +85,7 @@ def run_validate(ctx: ValidateContext) -> dict:
                     )
 
     finished_at = datetime.now(timezone.utc)
+
     drift_report = {
         "run_id": ctx.run_id,
         "source": ctx.source,
@@ -69,8 +98,6 @@ def run_validate(ctx: ValidateContext) -> dict:
         "input_record_count": summary.input_record_count,
         "accepted_count": summary.accepted_count,
         "rejected_count": summary.rejected_count,
-        "error_counts": summary.error_counts,
-        "fail_fast": ctx.fail_fast,
     }
     ctx.drift_report_path.write_text(json.dumps(drift_report, indent=2), encoding="utf-8")
 
@@ -96,9 +123,6 @@ def run_validate(ctx: ValidateContext) -> dict:
         },
     }
     ctx.bronze_manifest_path.write_text(json.dumps(bronze_manifest, indent=2), encoding="utf-8")
-
-    if ctx.fail_fast and summary.rejected_count > 0:
-        raise ValidationFailedError(f"{ctx.source}: validation failed under --fail-fast")
 
     log.info(
         "validate_complete",
