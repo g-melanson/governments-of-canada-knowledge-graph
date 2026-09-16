@@ -102,7 +102,7 @@ class CommonsMembersExpendituresAdapter(BaseAdapter):
 
             start, end = fiscal_quarter_bounds(year, quarter)
             yield {
-                "_row_class": "ExpenseReportRow",
+                "@type": "ExpenseReportRow",
                 **report_ctx,
                 "report_type": report_type,
                 "member_name": member_name,
@@ -125,7 +125,7 @@ class CommonsMembersExpendituresAdapter(BaseAdapter):
         for idx, cells in enumerate(data_rows):
             rec = dict(zip(header, cells))
             yield {
-                "_row_class": "ContractExpenditureRow",
+                "@type": "ContractExpenditureRow",
                 **report_ctx,
                 "row_number": idx,
                 "member_name": member_name,
@@ -137,7 +137,7 @@ class CommonsMembersExpendituresAdapter(BaseAdapter):
         for cells in data_rows:
             rec = dict(zip(header, cells))
             yield {
-                "_row_class": "HospitalityExpenditureRow",
+                "@type": "HospitalityExpenditureRow",
                 **report_ctx,
                 **_mapped(rec, "HospitalityExpenditureRow"),
             }
@@ -151,13 +151,13 @@ class CommonsMembersExpendituresAdapter(BaseAdapter):
             if is_summary:
                 segment_index = 0
                 yield {
-                    "_row_class": "TravelExpenditureRow",
+                    "@type": "TravelExpenditureRow",
                     **report_ctx,
                     **_mapped(rec, "TravelExpenditureRow"),
                 }
             else:
                 yield {
-                    "_row_class": "TravelClaimSegmentRow",
+                    "@type": "TravelClaimSegmentRow",
                     **report_ctx,
                     "segment_index": segment_index,
                     **_mapped(rec, "TravelClaimSegmentRow"),
@@ -166,8 +166,8 @@ class CommonsMembersExpendituresAdapter(BaseAdapter):
 
     def normalize(self, row: dict) -> dict:
 
-        row_class = row["_row_class"]
-        out: dict = {"_row_class": row_class}
+        row_class = row["@type"]
+        out: dict = {"@type": row_class}
         for slot in NORMALIZED_FIELDS[row_class]:
             val = row.get(slot)
             if isinstance(val, str):

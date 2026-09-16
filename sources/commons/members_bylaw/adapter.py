@@ -30,8 +30,8 @@ class CommonsMembersBylawAdapter(BaseAdapter):
         yield from walk(root, ctx, ())
 
     def normalize(self, row: dict) -> dict:
-        row_class = row["_row_class"]
-        out: dict = {"_row_class": row_class}
+        row_class = row["@type"]
+        out: dict = {"@type": row_class}
 
         for slot in NORMALIZED_FIELDS[row_class]:
             val = row.get(slot)
