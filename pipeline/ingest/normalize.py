@@ -62,7 +62,7 @@ class SchemaNormalizer:
         return self._ranges_cache[row_class]
 
     def normalize(self, row_class: str, row: dict[str, Any]) -> dict[str, Any]:
-        out: dict[str, Any] = {"_row_class": row_class}
+        out: dict[str, Any] = {"@type": row_class}
         for slot_name, slot_range in self._ranges(row_class).items():
             val = row.get(slot_name)
             if slot_range == "string":

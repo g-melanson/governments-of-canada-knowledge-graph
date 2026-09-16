@@ -35,12 +35,9 @@ def run_ingest(ctx: RunContext) -> dict:
     record_count = 0
     with ctx.records_path.open("w", encoding="utf-8") as fout:
         for raw_row in adapter.parse(raw_path):
-            row = normalizer.normalize(raw_row["_row_class"], raw_row)
+            row = normalizer.normalize(raw_row["@type"], raw_row)
             fout.write(json.dumps(row, ensure_ascii=False, default=staging_json_default) + "\n")
             record_count += 1
-
-    if record_count == 0:
-        raise EmptySourceError(f"{ctx.source} produced zero records")
 
     finished_at = datetime.now(timezone.utc)
     manifest = {

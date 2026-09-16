@@ -23,7 +23,7 @@ class CommonsMembersAdapter(BaseAdapter):
 
     def parse(self, raw_path: Path) -> Iterator[dict]:
         for elem in iter_member_of_parliament(raw_path):
-            row: dict = {"_row_class": "CommonsMembersRow"}
+            row: dict = {"@type": "CommonsMembersRow"}
             for child in elem:
                 xml_name = local_tag(child.tag)
                 if xml_name not in FIELD_MAP:
