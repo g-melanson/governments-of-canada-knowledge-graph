@@ -10,8 +10,9 @@ from pipeline.validate.context import ValidateContext
 SCHEMA_PATH = (
     Path(__file__).resolve().parents[3]
     / "sources"
-    / "commons_members"
-    / "commons_members.schema.yaml"
+    / "commons"
+    / "members"
+    / "schema.yaml"
 )
 
 TARGET_CLASS = "CommonsMembersRow"
@@ -104,7 +105,7 @@ def write_staging(
 def make_validate_context(
     tmp_path: Path,
     *,
-    source: str = "commons_members",
+    source: str = "commons.members",
     staging_run_id: str = "test-run",
     run_id: str = "validate-run",
     fail_fast: bool = False,
