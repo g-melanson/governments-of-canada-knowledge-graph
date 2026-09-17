@@ -16,7 +16,7 @@ from pipeline.validate.tests.conftest import (
 
 def test_run_validate_writes_bronze(write_staging_dir, validate_context):
     write_staging_dir(
-        "commons_members",
+        "commons.members",
         "test-run",
         rows_to_jsonl(valid_row()),
     )
@@ -27,7 +27,7 @@ def test_run_validate_writes_bronze(write_staging_dir, validate_context):
 
 def test_all_restricted_records_rejected_raises_empty_bronze_error(write_staging_dir, validate_context):
     write_staging_dir(
-        "commons_members",
+        "commons.members",
         "test-run",
         rows_to_jsonl(row_missing_id_key(), row_has_null_id_value(), row_has_bad_datetime_value(), row_has_extra_field()),
     )
@@ -37,7 +37,7 @@ def test_all_restricted_records_rejected_raises_empty_bronze_error(write_staging
 
 def test_run_validate_handles_multiple_records(write_staging_dir, validate_context):
     write_staging_dir(
-        "commons_members",
+        "commons.members",
         "test-run",
         rows_to_jsonl(valid_row(), valid_row()),
     )
@@ -47,7 +47,7 @@ def test_run_validate_handles_multiple_records(write_staging_dir, validate_conte
 
 def test_run_validate_differentiates_invalid_records(write_staging_dir, validate_context):
     write_staging_dir(
-        "commons_members",
+        "commons.members",
         "test-run",
         rows_to_jsonl(valid_row(), row_missing_id_key(), valid_row()),    
     )
@@ -58,7 +58,7 @@ def test_run_validate_differentiates_invalid_records(write_staging_dir, validate
 
 def test_run_validate_writes_drift_report(write_staging_dir, validate_context):
     write_staging_dir(
-        "commons_members",
+        "commons.members",
         "test-run",
         rows_to_jsonl(valid_row(), row_missing_id_key(), valid_row()),    
     )
@@ -69,7 +69,7 @@ def test_run_validate_writes_drift_report(write_staging_dir, validate_context):
     drift_report = json.loads(contents)
 
     assert drift_report["run_id"] == "validate-run"
-    assert drift_report["source"] == "commons_members"
+    assert drift_report["source"] == "commons.members"
     assert drift_report["input_record_count"] == 3
     assert drift_report["accepted_count"] == 2
     assert drift_report["rejected_count"] == 1
