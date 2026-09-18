@@ -6,7 +6,7 @@ version: 0.1.0
 
 imports:
   - linkml:types
-  - foundation/types
+  - types
 
 default_prefix: gckg
 
@@ -104,6 +104,10 @@ slots:
 
   bill_type:
     description: The type of a bill.
+    range: string
+
+  doc_date_time:
+    description: The date a document comes into effect.
     range: string
 
   label:
