@@ -131,7 +131,7 @@ classes:
       object:
         range: Agent
 
-  ContractExpenseClaimHasSupplier:
+  ContractExpenseClaimHasContractParty:
     is_a: Relationship
     slots:
       - id
